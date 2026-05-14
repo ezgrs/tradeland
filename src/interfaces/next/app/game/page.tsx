@@ -6,7 +6,7 @@ import {
     CardContent,
     CardHeader,
     CardTitle,
-} from "../..//components/ui/card"
+} from "../../components/ui/card"
 import { Progress } from "../../components/ui/progress"
 import {
     Table,
@@ -40,20 +40,20 @@ import {
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { Jogador } from "../../../../domain/entities/Jogador"
-import { Carteira } from "../../../../domain/entities/Carteira"
+import { Jogador } from "@/src/domain/entities/Jogador"
+import { Carteira } from "@/src/domain/entities/Carteira"
 import { Mochila } from "@/src/domain/entities/Mochila"
 import {
     DefaultJogadorController,
     JogadorController,
-} from "../../../../domain/services/jogador"
+} from "@/src/domain/services/jogador"
 import { TipoArmadura } from "@/src/domain/entities/Armadura"
 import { cn } from "../../lib/utils"
 import { TipoAlimento } from "@/src/domain/entities/Alimento"
-import { Alimento, Comida } from "@/src/domain/entities/Comida"
+import { Comida } from "@/src/domain/entities/Comida"
 import { Espolio } from "@/src/domain/entities/Espolio"
 import { TipoPocao } from "@/src/domain/entities/Pocao"
-import { Bebida, Pocao } from "@/src/domain/entities/Bebida"
+import { Bebida } from "@/src/domain/entities/Bebida"
 
 type State = {
     jogador: Jogador
