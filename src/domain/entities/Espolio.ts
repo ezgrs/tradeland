@@ -40,14 +40,15 @@ export const espolios = {
 
 type ElementOf<T> = T extends readonly (infer U)[] ? U : never
 
-type T_ = keyof typeof espolios
-
-type Espolio = {
-    [E in T_]: {
+export type Espolio = {
+    [E in keyof typeof espolios]: {
         [C in keyof (typeof espolios)[E]]: {
-            enemy: E
-            type: C
-            name: ElementOf<(typeof espolios)[E][C]>
-        }
+            [N in ElementOf<(typeof espolios)[E][C]> & string]: {
+                id: `${N}${Capitalize<E & string>}`
+                tipoInimigo: E
+                classe: C
+                tipo: N
+            }
+        }[ElementOf<(typeof espolios)[E][C]> & string]
     }[keyof (typeof espolios)[E]]
-}[T_]
+}[keyof typeof espolios]
