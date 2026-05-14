@@ -45,9 +45,8 @@ import { TipoArmadura } from "@/src/domain/entities/Armadura"
 import { cn } from "../../lib/utils"
 
 export default function GameDashboard() {
-    const jogador = new Jogador()
     const router = useRouter()
-    const [data, setData] = useState<any>(null)
+    const [jogador, setJogador] = useState<Jogador | null>(null)
 
     const labelsArmaduras: Record<TipoArmadura, string> = {
         elmo: "Elmo",
@@ -62,9 +61,18 @@ export default function GameDashboard() {
             router.replace("/")
             return
         }
-        setData(JSON.parse(stored))
+        setJogador({
+            hp: 100,
+            maxHp: 100,
+            forca: 10,
+            inteligencia: 0,
+            nivel: 1,
+            fome: 0,
+            xp: 0,
+            resistencias: {},
+        })
     }, [router])
-    if (!data) return null
+    if (!jogador) return null
     return (
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-12">
@@ -325,9 +333,9 @@ export default function GameDashboard() {
                                     {Object.entries(labelsArmaduras).map(
                                         ([tipoArmadura, label]) => {
                                             const stats =
-                                                jogador.resistencias.get(
-                                                    tipoArmadura as TipoArmadura,
-                                                )
+                                                jogador.resistencias[
+                                                    tipoArmadura as TipoArmadura
+                                                ]
                                             return (
                                                 <div className="flex gap-x-4">
                                                     <div
