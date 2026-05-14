@@ -39,14 +39,21 @@ import {
     IconFoldUp,
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Jogador } from "../../../../domain/entities/Jogador"
+import {
+    DefaultJogadorController,
+    JogadorController,
+} from "../../../../domain/services/jogador"
 import { TipoArmadura } from "@/src/domain/entities/Armadura"
 import { cn } from "../../lib/utils"
 
 export default function GameDashboard() {
     const router = useRouter()
     const [jogador, setJogador] = useState<Jogador | null>(null)
+    const controllerRef = useRef<JogadorController<Jogador>>(
+        new DefaultJogadorController(),
+    )
 
     const labelsArmaduras: Record<TipoArmadura, string> = {
         elmo: "Elmo",
@@ -72,6 +79,15 @@ export default function GameDashboard() {
             resistencias: {},
         })
     }, [router])
+    useEffect(() => {
+        const id = setInterval(() => {
+            setJogador((jogador) => {
+                if (jogador == null) return null
+                return controllerRef.current.alteraFome(jogador, 5)
+            })
+        }, 60_000)
+        return () => clearInterval(id)
+    }, [])
     if (!jogador) return null
     return (
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">

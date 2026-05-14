@@ -12,7 +12,7 @@ export interface JogadorListener<R> {
     bebe(jogador: Jogador, bebida: Bebida): R
 }
 
-interface JogadorController<R> {
+export interface JogadorController<R> {
     alteraHp(jogador: Jogador, valor: number): R
     alteraFome(jogador: Jogador, valor: number): R
     alteraXp(jogador: Jogador, valor: number): R
