@@ -41,6 +41,7 @@ import {
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Jogador } from "../../../../domain/entities/Jogador"
+import { Carteira } from "../../../../domain/entities/Carteira"
 import {
     DefaultJogadorController,
     JogadorController,
@@ -48,9 +49,14 @@ import {
 import { TipoArmadura } from "@/src/domain/entities/Armadura"
 import { cn } from "../../lib/utils"
 
+type State = {
+    jogador: Jogador
+    carteira: Carteira
+}
+
 export default function GameDashboard() {
     const router = useRouter()
-    const [jogador, setJogador] = useState<Jogador | null>(null)
+    const [state, setState] = useState<State | null>(null)
     const controllerRef = useRef<JogadorController<Jogador>>(
         new DefaultJogadorController(),
     )
@@ -68,27 +74,36 @@ export default function GameDashboard() {
             router.replace("/")
             return
         }
-        setJogador({
-            hp: 100,
-            maxHp: 100,
-            forca: 10,
-            inteligencia: 0,
-            nivel: 1,
-            fome: 0,
-            xp: 0,
-            resistencias: {},
+        setState({
+            jogador: {
+                hp: 100,
+                maxHp: 100,
+                forca: 10,
+                inteligencia: 0,
+                nivel: 1,
+                fome: 0,
+                xp: 0,
+                resistencias: {},
+            },
+            carteira: {
+                valor: 0,
+            },
         })
     }, [router])
     useEffect(() => {
         const id = setInterval(() => {
-            setJogador((jogador) => {
-                if (jogador == null) return null
-                return controllerRef.current.alteraFome(jogador, 5)
+            setState((state) => {
+                if (state == null) return null
+                return {
+                    ...state,
+                    jogador: controllerRef.current.alteraFome(state.jogador, 5),
+                }
             })
         }, 60_000)
         return () => clearInterval(id)
     }, [])
-    if (!jogador) return null
+    if (!state) return null
+    const jogador = state.jogador
     return (
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-12">
