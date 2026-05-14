@@ -386,7 +386,7 @@ export default function GameDashboard() {
                                 </div>
                             </div>
 
-                            <div className="flex justify-center gap-4 pt-5">
+                            <div className="flex flex-wrap justify-center gap-4 pt-5">
                                 <Button variant="secondary" className="gap-2">
                                     <IconBrandSafari className="h-4 w-4" />{" "}
                                     Iniciar passeio
