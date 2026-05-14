@@ -103,7 +103,7 @@ export default function GameDashboard() {
         return () => clearInterval(id)
     }, [])
     if (!state) return null
-    const jogador = state.jogador
+    const { jogador, carteira } = state
     return (
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-12">
@@ -184,7 +184,7 @@ export default function GameDashboard() {
                                                 Carteira
                                             </p>
                                             <p className="text-lg font-bold">
-                                                1.5k
+                                                TL${carteira.valor}
                                             </p>
                                         </div>
                                     </div>
