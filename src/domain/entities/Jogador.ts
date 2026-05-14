@@ -18,7 +18,7 @@ export class Jogador {
 
     #fome: number
 
-    private resistencias: Map<TipoArmadura, EstadoArmadura>
+    #resistencias: Map<TipoArmadura, EstadoArmadura>
 
     constructor() {
         this.#hp = 100
@@ -29,7 +29,7 @@ export class Jogador {
         this.#nivel = 1
         this.#fome = 0
 
-        this.resistencias = new Map()
+        this.#resistencias = new Map()
     }
 
     get hp(): number {
@@ -58,6 +58,10 @@ export class Jogador {
 
     get nivel(): number {
         return this.#nivel
+    }
+
+    get resistencias(): Map<TipoArmadura, EstadoArmadura> {
+        return new Map(this.#resistencias)
     }
 
     private alteraHp(valor: number) {
@@ -100,8 +104,8 @@ export class Jogador {
     recebeDano(dano: number) {
         let danoFinal = dano
 
-        const resistencias = new Map(this.resistencias)
-        for (const [tipoArmadura, estadoArmadura] of this.resistencias) {
+        const resistencias = new Map(this.#resistencias)
+        for (const [tipoArmadura, estadoArmadura] of this.#resistencias) {
             // Foi adquirida mas não está montada
             if (!estadoArmadura.montada) continue
 
@@ -118,7 +122,7 @@ export class Jogador {
             }
             danoFinal -= danoArmadura
         }
-        this.resistencias = resistencias
+        this.#resistencias = resistencias
 
         this.alteraHp(-danoFinal)
     }

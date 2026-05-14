@@ -35,13 +35,26 @@ import {
     IconSoup,
     IconToolsKitchen2,
     IconMug,
+    IconFoldDown,
+    IconFoldUp,
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { Jogador } from "../../../../domain/entities/Jogador"
+import { TipoArmadura } from "@/src/domain/entities/Armadura"
+import { cn } from "../../lib/utils"
 
 export default function GameDashboard() {
+    const jogador = new Jogador()
     const router = useRouter()
     const [data, setData] = useState<any>(null)
+
+    const labelsArmaduras: Record<TipoArmadura, string> = {
+        elmo: "Elmo",
+        peitoral: "Peitoral",
+        calcas: "Calças",
+        botas: "Botas",
+    }
 
     useEffect(() => {
         const stored = sessionStorage.getItem("userData")
@@ -68,30 +81,35 @@ export default function GameDashboard() {
                                     <div className="space-y-1">
                                         <div className="flex justify-between text-xs font-bold uppercase">
                                             <span>HP</span>
-                                            <span>80/100</span>
+                                            <span>
+                                                {jogador.hp}/{jogador.maxHp}
+                                            </span>
                                         </div>
                                         <Progress
-                                            value={80}
+                                            value={
+                                                (jogador.hp / jogador.maxHp) *
+                                                100
+                                            }
                                             className="h-3 bg-slate-800"
                                         />
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex justify-between text-xs font-bold uppercase">
                                             <span>XP</span>
-                                            <span>45%</span>
+                                            <span>{jogador.xp}%</span>
                                         </div>
                                         <Progress
-                                            value={45}
+                                            value={jogador.xp}
                                             className="h-3 bg-slate-800"
                                         />
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex justify-between text-xs font-bold uppercase">
                                             <span>Fome</span>
-                                            <span>20%</span>
+                                            <span>{jogador.fome}%</span>
                                         </div>
                                         <Progress
-                                            value={20}
+                                            value={jogador.fome}
                                             className="h-3 bg-slate-800"
                                         />
                                     </div>
@@ -105,7 +123,7 @@ export default function GameDashboard() {
                                                 Força
                                             </p>
                                             <p className="text-lg font-bold">
-                                                18
+                                                {jogador.forca}
                                             </p>
                                         </div>
                                     </div>
@@ -116,7 +134,7 @@ export default function GameDashboard() {
                                                 Inteligência
                                             </p>
                                             <p className="text-lg font-bold">
-                                                24
+                                                {jogador.inteligencia}
                                             </p>
                                         </div>
                                     </div>
@@ -138,7 +156,7 @@ export default function GameDashboard() {
                                                 Nível
                                             </p>
                                             <p className="text-lg font-bold">
-                                                12
+                                                {jogador.nivel}
                                             </p>
                                         </div>
                                     </div>
@@ -304,19 +322,73 @@ export default function GameDashboard() {
 
                             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                                 <div className="space-y-3">
-                                    {["Elmo", "Peitoral", "Calças", "Bota"].map(
-                                        (eq) => (
-                                            <div key={eq} className="space-y-1">
-                                                <div className="flex justify-between text-[10px] text-slate-500 uppercase">
-                                                    <span>{eq}</span>
-                                                    <span>90%</span>
+                                    {Object.entries(labelsArmaduras).map(
+                                        ([tipoArmadura, label]) => {
+                                            const stats =
+                                                jogador.resistencias.get(
+                                                    tipoArmadura as TipoArmadura,
+                                                )
+                                            return (
+                                                <div className="flex gap-x-4">
+                                                    <div
+                                                        key={tipoArmadura}
+                                                        className="flex-1 space-y-1"
+                                                    >
+                                                        <div
+                                                            className={cn(
+                                                                "flex",
+                                                                "justify-between",
+                                                                "text-[10px]",
+                                                                stats?.montada ===
+                                                                    true
+                                                                    ? "text-white-500"
+                                                                    : "text-slate-500",
+                                                                "uppercase",
+                                                            )}
+                                                        >
+                                                            <span>{label}</span>
+                                                            {stats != null && (
+                                                                <span>
+                                                                    {stats.hp}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <Progress
+                                                            value={stats?.hp}
+                                                            className={cn(
+                                                                "h-1.5",
+                                                                stats?.montada
+                                                                    ? null
+                                                                    : "[&>div]:bg-gray-500",
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className={cn(
+                                                            "h-7",
+                                                            "border-slate-700",
+                                                            "bg-slate-950",
+                                                            "px-2",
+                                                            "text-[10px]",
+                                                            "uppercase",
+                                                            "hover:bg-blue-950",
+                                                            "hover:text-blue-400",
+                                                            stats == null
+                                                                ? "invisible"
+                                                                : null,
+                                                        )}
+                                                    >
+                                                        {stats?.montada ? (
+                                                            <IconFoldDown className="h-4 w-4" />
+                                                        ) : (
+                                                            <IconFoldUp className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
                                                 </div>
-                                                <Progress
-                                                    value={90}
-                                                    className="h-1.5"
-                                                />
-                                            </div>
-                                        ),
+                                            )
+                                        },
                                     )}
                                 </div>
                                 <div className="space-y-3">
