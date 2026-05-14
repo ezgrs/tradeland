@@ -22,6 +22,7 @@ import {
 } from "../../components/ui/select"
 import { Dificuldade } from "@/src/domain/entities/Dificuldade"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 type Estado = {
     nome: string | undefined
@@ -45,6 +46,7 @@ export default function SetupPage() {
         classe: undefined,
         dificuldade: "normal",
     })
+    const router = useRouter()
     return (
         <main className="flex min-h-screen w-full items-center justify-center bg-background p-6">
             <Card className="w-full max-w-lg shadow-lg">
@@ -134,7 +136,20 @@ export default function SetupPage() {
                 </CardContent>
 
                 <CardFooter>
-                    <Button className="h-14 w-full text-xl font-bold tracking-widest uppercase shadow-xl shadow-primary/20">
+                    <Button
+                        onClick={() => {
+                            sessionStorage.setItem(
+                                "userData",
+                                JSON.stringify({
+                                    nome: formData.nome,
+                                    classe: formData.classe,
+                                    dificuldade: formData.dificuldade,
+                                }),
+                            )
+                            router.push("/game")
+                        }}
+                        className="h-14 w-full text-xl font-bold tracking-widest uppercase shadow-xl shadow-primary/20"
+                    >
                         INICIAR
                     </Button>
                 </CardFooter>

@@ -36,10 +36,22 @@ import {
     IconToolsKitchen2,
     IconMug,
 } from "@tabler/icons-react"
-import { Jogador } from "../../../../domain/entities/Jogador"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function GameDashboard() {
-    const jogador = new Jogador()
+    const router = useRouter()
+    const [data, setData] = useState<any>(null)
+
+    useEffect(() => {
+        const stored = sessionStorage.getItem("userData")
+        if (!stored) {
+            router.replace("/")
+            return
+        }
+        setData(JSON.parse(stored))
+    }, [router])
+    if (!data) return null
     return (
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-12">
