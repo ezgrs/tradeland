@@ -353,11 +353,11 @@ export default function GameDashboard() {
                                                     tipoArmadura as TipoArmadura
                                                 ]
                                             return (
-                                                <div className="flex gap-x-4">
-                                                    <div
-                                                        key={tipoArmadura}
-                                                        className="flex-1 space-y-1"
-                                                    >
+                                                <div
+                                                    key={tipoArmadura}
+                                                    className="flex gap-x-4"
+                                                >
+                                                    <div className="flex-1 space-y-1">
                                                         <div
                                                             className={cn(
                                                                 "flex",
