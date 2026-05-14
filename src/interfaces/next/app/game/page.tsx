@@ -32,11 +32,11 @@ import {
     IconTrophy,
     IconBrandSafari,
     IconBuildingStore,
-    IconSoup,
     IconToolsKitchen2,
     IconMug,
     IconFoldDown,
     IconFoldUp,
+    IconBong,
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -396,7 +396,7 @@ export default function GameDashboard() {
                                     Visitar comerciante
                                 </Button>
                                 <Button variant="secondary" className="gap-2">
-                                    <IconSoup className="h-4 w-4" /> Visitar
+                                    <IconBong className="h-4 w-4" /> Visitar
                                     alquimista
                                 </Button>
                             </div>
