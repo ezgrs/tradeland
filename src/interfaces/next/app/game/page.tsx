@@ -59,120 +59,7 @@ import { LogsSection } from "./components/LogsSection"
 import { State } from "./models/State"
 import { createLog } from "./models/Log"
 import { InventorySection } from "./components/InventorySection"
-
-type DadosPasseio = {
-    controller: AbortController
-}
-
-function delay(ms: number): Promise<void> {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms)
-    })
-}
-
-class ProbabilidadeAleatoria implements Probabilidade {
-    porChaves<T extends string>(pesos: Record<T, number>): T {
-        const entries = Object.entries(pesos) as [T, number][]
-        return this.porItens(entries.map(([valor, peso]) => ({ valor, peso })))
-    }
-
-    porItens<T>(pesos: { valor: T; peso: number }[]): T {
-        const total = pesos.reduce((sum, p) => sum + p.peso, 0)
-
-        if (total <= 0) {
-            throw new Error("Total de pesos deve ser maior que zero")
-        }
-
-        let random = Math.random() * total
-        for (const item of pesos) {
-            random -= item.peso
-            if (random <= 0) {
-                return item.valor
-            }
-        }
-        return pesos[pesos.length - 1].valor
-    }
-
-    porIntervaloNumerico(min: number, max: number): number {
-        if (max < min) {
-            throw new Error("max deve ser >= min")
-        }
-        return Math.floor(Math.random() * (max - min + 1)) + min
-    }
-}
-
-type PasseioArgs = {
-    signal: AbortSignal
-    probabilidade: Probabilidade
-    tipoPersonagem: TipoPersonagem
-    jogador: Jogador
-    onAchado: (achado: AchadoPasseio) => Promise<void>
-    onRodadaBatalha: (rodada: RodadaBatalha) => Promise<void>
-    onCovarde: () => Promise<void>
-    listener: JogadorListener<any>
-}
-
-async function passeia(args: PasseioArgs): Promise<void> {
-    type Event =
-        | { type: "passeio" }
-        | { type: "batalha"; recompensa: Espolio | null; rodada: RodadaBatalha }
-
-    let currentJogador = args.jogador
-    let currentEvent: Event = { type: "passeio" }
-    while (!args.signal.aborted) {
-        switch (currentEvent.type) {
-            case "passeio":
-                const achado = executaPasseio(args.probabilidade, {
-                    tipoPersonagem: args.tipoPersonagem,
-                })
-                await args.onAchado(achado)
-                switch (achado.tipo) {
-                    case "bau":
-                        currentEvent = { type: "passeio" }
-                        break
-                    case "inimigo":
-                        currentEvent = {
-                            type: "batalha",
-                            recompensa: achado.recompensa,
-                            rodada: {
-                                inimigo: {
-                                    tipo: achado.tipoInimigo,
-                                    nivel: currentJogador.nivel,
-                                    hp: currentJogador.nivel * 20 + 50,
-                                    forca: currentJogador.nivel + 2,
-                                },
-                                jogador: currentJogador,
-                            },
-                        }
-                        break
-                }
-                break
-            case "batalha":
-                const proximaRodada = executaBatalha({
-                    inimigo: currentEvent.rodada.inimigo,
-                    jogador: currentEvent.rodada.jogador,
-                    tipoPersonagem: args.tipoPersonagem,
-                    listener: args.listener,
-                })
-                if (
-                    proximaRodada.inimigo.hp <= 0 ||
-                    proximaRodada.jogador.hp <= 0
-                ) {
-                    currentEvent = { type: "passeio" }
-                } else {
-                    await args.onRodadaBatalha(proximaRodada)
-                    currentEvent = {
-                        type: "batalha",
-                        recompensa: currentEvent.recompensa,
-                        rodada: proximaRodada,
-                    }
-                }
-        }
-    }
-    if (currentEvent?.type == "batalha") {
-        await args.onCovarde()
-    }
-}
+import { StatisticsSection } from "./components/StatisticsSection"
 
 type AtaquesSelectProps = {
     nivel: number
@@ -255,8 +142,6 @@ export default function GameDashboard() {
             }
         })(),
     )
-    const passeioRef = useRef<DadosPasseio | null>(null)
-    const [ehPasseio, setEhPasseio] = useState<boolean>(false)
 
     const labelsArmaduras: Record<TipoArmadura, string> = {
         elmo: "Elmo",
@@ -321,279 +206,77 @@ export default function GameDashboard() {
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-12">
                 <div className="space-y-6 lg:col-span-6">
-                    <Card className="border-slate-800 bg-slate-900">
-                        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 px-6 py-1">
-                            <CardTitle className="text-sm font-medium tracking-wider text-slate-400 uppercase">
-                                Estatísticas
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6 pt-2">
-                            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-                                <div className="space-y-4">
-                                    <div className="space-y-1">
-                                        <div className="flex justify-between text-xs font-bold uppercase">
-                                            <span>HP</span>
-                                            <span>
-                                                {jogador.hp}/{jogador.maxHp}
-                                            </span>
-                                        </div>
-                                        <Progress
-                                            value={
-                                                (jogador.hp / jogador.maxHp) *
-                                                100
-                                            }
-                                            className="h-3 bg-slate-800"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="flex justify-between text-xs font-bold uppercase">
-                                            <span>XP</span>
-                                            <span>{jogador.xp}%</span>
-                                        </div>
-                                        <Progress
-                                            value={jogador.xp}
-                                            className="h-3 bg-slate-800"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="flex justify-between text-xs font-bold uppercase">
-                                            <span>Fome</span>
-                                            <span>{jogador.fome}%</span>
-                                        </div>
-                                        <Progress
-                                            value={jogador.fome}
-                                            className="h-3 bg-slate-800"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="flex items-center gap-3">
-                                        <IconSword className="h-5 w-5 text-red-400" />{" "}
-                                        <div>
-                                            <p className="text-[10px] text-slate-400 uppercase">
-                                                Força
-                                            </p>
-                                            <p className="text-lg font-bold">
-                                                {jogador.forca}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <IconBrain className="h-5 w-5 text-purple-400" />{" "}
-                                        <div>
-                                            <p className="text-[10px] text-slate-400 uppercase">
-                                                Inteligência
-                                            </p>
-                                            <p className="text-lg font-bold">
-                                                {jogador.inteligencia}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <IconWallet className="h-5 w-5 text-green-400" />{" "}
-                                        <div>
-                                            <p className="text-[10px] text-slate-400 uppercase">
-                                                Carteira
-                                            </p>
-                                            <p className="text-lg font-bold">
-                                                TL${carteira.valor}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <IconTrophy className="h-5 w-5 text-yellow-400" />{" "}
-                                        <div>
-                                            <p className="text-[10px] text-slate-400 uppercase">
-                                                Nível
-                                            </p>
-                                            <p className="text-lg font-bold">
-                                                {jogador.nivel}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-wrap justify-center gap-4 pt-5">
-                                {!ehPasseio ? (
-                                    <Button
-                                        onClick={(_) => {
-                                            const controller =
-                                                new AbortController()
-                                            passeia({
-                                                signal: controller.signal,
-                                                jogador: jogador,
-                                                tipoPersonagem:
-                                                    partida.tipoPersonagem,
-                                                probabilidade:
-                                                    new ProbabilidadeAleatoria(),
-                                                listener:
-                                                    jogadorRef.current.listener,
-                                                async onAchado(
-                                                    achado: AchadoPasseio,
-                                                ): Promise<void> {
-                                                    switch (achado.tipo) {
-                                                        case "bau":
-                                                            switch (
-                                                                achado.item.tipo
-                                                            ) {
-                                                                case "dinheiro":
-                                                                    const moedas =
-                                                                        achado
-                                                                            .item
-                                                                            .moedas
-                                                                    setState(
-                                                                        (
-                                                                            state,
-                                                                        ) => {
-                                                                            if (
-                                                                                state ==
-                                                                                null
-                                                                            )
-                                                                                return null
-                                                                            return {
-                                                                                ...state,
-                                                                                logs: [
-                                                                                    createLog(
-                                                                                        "positivo",
-                                                                                        `Você encontrou ${moedas} moedas!`,
-                                                                                    ),
-                                                                                    ...state.logs,
-                                                                                ],
-                                                                                carteira:
-                                                                                    {
-                                                                                        ...state.carteira,
-                                                                                        valor:
-                                                                                            state
-                                                                                                .carteira
-                                                                                                .valor +
-                                                                                            moedas,
-                                                                                    },
-                                                                            }
-                                                                        },
-                                                                    )
-                                                                    break
-                                                                case "bebida":
-                                                                    const bebida =
-                                                                        achado
-                                                                            .item
-                                                                            .bebida
-                                                                    setState(
-                                                                        (
-                                                                            state,
-                                                                        ) => {
-                                                                            if (
-                                                                                state ==
-                                                                                null
-                                                                            )
-                                                                                return null
-                                                                            return {
-                                                                                ...state,
-                                                                                logs: [
-                                                                                    createLog(
-                                                                                        "positivo",
-                                                                                        `Você encontrou uma bebida!`,
-                                                                                    ),
-                                                                                    ...state.logs,
-                                                                                ],
-                                                                            }
-                                                                        },
-                                                                    )
-                                                                    break
-                                                                case "comida":
-                                                                    const comida =
-                                                                        achado
-                                                                            .item
-                                                                            .comida
-                                                                    setState(
-                                                                        (
-                                                                            state,
-                                                                        ) => {
-                                                                            if (
-                                                                                state ==
-                                                                                null
-                                                                            )
-                                                                                return null
-                                                                            return {
-                                                                                ...state,
-                                                                                logs: [
-                                                                                    createLog(
-                                                                                        "positivo",
-                                                                                        `Você encontrou uma comida!`,
-                                                                                    ),
-                                                                                    ...state.logs,
-                                                                                ],
-                                                                            }
-                                                                        },
-                                                                    )
-                                                                    break
-                                                            }
-                                                            await delay(1000)
-                                                            break
-                                                        case "inimigo":
-                                                            setState(
-                                                                (state) => {
-                                                                    if (
-                                                                        state ==
-                                                                        null
-                                                                    )
-                                                                        return null
-                                                                    return {
-                                                                        ...state,
-                                                                        logs: [
-                                                                            createLog(
-                                                                                "neutro",
-                                                                                `Você encontrou um inimigo, prepare-se!`,
-                                                                            ),
-                                                                            ...state.logs,
-                                                                        ],
-                                                                    }
-                                                                },
-                                                            )
-                                                            await delay(5000)
-                                                            break
-                                                    }
-                                                },
-                                                async onRodadaBatalha(
-                                                    rodada: RodadaBatalha,
-                                                ): Promise<void> {},
-                                                async onCovarde(): Promise<void> {},
-                                            })
-                                            passeioRef.current = { controller }
-                                            setEhPasseio(true)
-                                        }}
-                                        variant="secondary"
-                                        className="gap-2"
-                                    >
-                                        <IconBrandSafari className="h-4 w-4" />{" "}
-                                        Iniciar passeio
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        onClick={async (_) => {
-                                            passeioRef.current?.controller.abort()
-                                            passeioRef.current = null
-                                            setEhPasseio(false)
-                                        }}
-                                        variant="secondary"
-                                        className="gap-2"
-                                    >
-                                        <IconHome className="h-4 w-4" /> Voltar
-                                        para casa
-                                    </Button>
-                                )}
-                                <Button variant="secondary" className="gap-2">
-                                    <IconBuildingStore className="h-4 w-4" />{" "}
-                                    Visitar comerciante
-                                </Button>
-                                <Button variant="secondary" className="gap-2">
-                                    <IconBong className="h-4 w-4" /> Visitar
-                                    alquimista
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <StatisticsSection
+                        title="Estatísticas"
+                        partida={partida}
+                        jogador={jogador}
+                        carteira={carteira}
+                        listener={jogadorRef.current.listener}
+                        onFindMoney={(qtd) => {
+                            setState((state) => {
+                                if (state == null) return null
+                                return {
+                                    ...state,
+                                    logs: [
+                                        createLog(
+                                            "positivo",
+                                            `Você encontrou ${qtd} moedas!`,
+                                        ),
+                                        ...state.logs,
+                                    ],
+                                    carteira: {
+                                        ...state.carteira,
+                                        valor: state.carteira.valor + qtd,
+                                    },
+                                }
+                            })
+                        }}
+                        onFindDrink={(_) => {
+                            setState((state) => {
+                                if (state == null) return null
+                                return {
+                                    ...state,
+                                    logs: [
+                                        createLog(
+                                            "positivo",
+                                            `Você encontrou uma bebida!`,
+                                        ),
+                                        ...state.logs,
+                                    ],
+                                }
+                            })
+                        }}
+                        onFindFood={(_) => {
+                            setState((state) => {
+                                if (state == null) return null
+                                return {
+                                    ...state,
+                                    logs: [
+                                        createLog(
+                                            "positivo",
+                                            `Você encontrou uma comida!`,
+                                        ),
+                                        ...state.logs,
+                                    ],
+                                }
+                            })
+                        }}
+                        onFindEnemy={(_) => {
+                            setState((state) => {
+                                if (state == null) return null
+                                return {
+                                    ...state,
+                                    logs: [
+                                        createLog(
+                                            "neutro",
+                                            `Você encontrou um inimigo, prepare-se!`,
+                                        ),
+                                        ...state.logs,
+                                    ],
+                                }
+                            })
+                        }}
+                    />
                     <LogsSection
                         title="Logs de Registro"
                         logs={state.logs}
