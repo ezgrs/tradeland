@@ -23,7 +23,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../../components/ui/select"
-import { ScrollArea } from "../../components/ui/scroll-area"
 import {
     IconTrash,
     IconSword,
@@ -42,7 +41,6 @@ import {
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Jogador } from "@/src/domain/entities/Jogador"
-import { Carteira } from "@/src/domain/entities/Carteira"
 import { Mochila } from "@/src/domain/entities/Mochila"
 import {
     AchadoPasseio,
@@ -68,40 +66,13 @@ import {
     TipoGolpe,
     TipoPersonagem,
 } from "@/src/domain/entities/Personagem"
-import { Dificuldade } from "@/src/domain/entities/Dificuldade"
 import { Probabilidade } from "@/src/domain/entities/Probabilidade"
+import { LogsSection } from "./components/LogsSection"
+import { State } from "./models/State"
+import { createLog } from "./models/Log"
 
 type DadosPasseio = {
     controller: AbortController
-}
-
-type TipoLog = "positivo" | "negativo" | "neutro"
-type Log = {
-    id: string
-    tipo: TipoLog
-    timestamp: Date
-    mensagem: string
-}
-function createLog(tipo: TipoLog, mensagem: string): Log {
-    return {
-        id: crypto.randomUUID(),
-        tipo: tipo,
-        timestamp: new Date(),
-        mensagem: mensagem,
-    }
-}
-
-type State = {
-    partida: {
-        nomePersonagem: string
-        tipoPersonagem: TipoPersonagem
-        dificuldade: Dificuldade
-    }
-    jogador: Jogador
-    carteira: Carteira
-    mochila: Mochila
-    idxGolpe: number | null
-    logs: Log[]
 }
 
 type RowValue<K, V> = { tipo: K; valores: V[] } | null
@@ -806,55 +777,16 @@ export default function GameDashboard() {
                             </div>
                         </CardContent>
                     </Card>
-
-                    <Card className="flex h-[300px] flex-col border-slate-800 bg-slate-900">
-                        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 px-6 py-1">
-                            <CardTitle className="text-sm font-medium tracking-wider text-slate-400 uppercase">
-                                Log de Registro
-                            </CardTitle>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-slate-500 hover:text-red-400"
-                                onClick={(_) =>
-                                    setState((state) => {
-                                        if (state == null) return null
-                                        return { ...state, logs: [] }
-                                    })
-                                }
-                            >
-                                <IconTrash className="h-4 w-4" />
-                            </Button>
-                        </CardHeader>
-                        <ScrollArea className="max-h-[200px] p-4 font-mono text-sm text-slate-400">
-                            {state.logs.map((log) => {
-                                const timestampLabel =
-                                    `${String(log.timestamp.getHours()).padStart(2, "0")}:` +
-                                    `${String(log.timestamp.getMinutes()).padStart(2, "0")}:` +
-                                    `${String(log.timestamp.getSeconds()).padStart(2, "0")}`
-                                const attrs = ["mb-1"]
-                                switch (log.tipo) {
-                                    case "neutro":
-                                        attrs.push("text-slate-500")
-                                        break
-                                    case "negativo":
-                                        attrs.push("text-red-400")
-                                        break
-                                    case "positivo":
-                                        attrs.push(
-                                            "font-bold",
-                                            "text-green-400",
-                                        )
-                                        break
-                                }
-                                return (
-                                    <p key={log.id} className={cn(...attrs)}>
-                                        [{timestampLabel}] {log.mensagem}
-                                    </p>
-                                )
-                            })}
-                        </ScrollArea>
-                    </Card>
+                    <LogsSection
+                        title="Logs de Registro"
+                        logs={state.logs}
+                        onClearLogs={() => {
+                            setState((state) => {
+                                if (state == null) return null
+                                return { ...state, logs: [] }
+                            })
+                        }}
+                    />
                 </div>
 
                 <div className="space-y-6 lg:col-span-6">
