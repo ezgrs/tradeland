@@ -54,11 +54,20 @@ import { Comida } from "@/src/domain/entities/Comida"
 import { Espolio } from "@/src/domain/entities/Espolio"
 import { TipoPocao } from "@/src/domain/entities/Pocao"
 import { Bebida } from "@/src/domain/entities/Bebida"
+import { TipoGolpe, tiposGolpes } from "@/src/domain/data/golpes"
+import { TipoPersonagem } from "@/src/domain/entities/Personagem"
+import { Dificuldade } from "@/src/domain/entities/Dificuldade"
 
 type State = {
+    partida: {
+        nomePersonagem: string
+        tipoPersonagem: TipoPersonagem
+        dificuldade: Dificuldade
+    }
     jogador: Jogador
     carteira: Carteira
     mochila: Mochila
+    idxGolpe: number | null
 }
 
 type RowValue<K, V> = { tipo: K; valores: V[] } | null
@@ -233,6 +242,69 @@ function MochilaTable({ mochila }: { mochila: Mochila }) {
     )
 }
 
+type AtaquesSelectProps = {
+    nivel: number
+    tipoPersonagem: TipoPersonagem
+    idx: number | null
+    onSelected: (idx: number | null) => void
+}
+
+function AtaquesSelect(props: AtaquesSelectProps) {
+    const labelsAtaques: Record<TipoGolpe<TipoPersonagem>, string> = {
+        claraoLuz: "Clarão de luz",
+        nevoaLacrimejante: "Névoa lacrimejante",
+        rajadaFogo: "Rajada de fogo",
+        penitencia: "Penitência",
+        choqueSagrado: "Choque sagrado",
+        curaReversa: "Cura reversa",
+        socoParalisante: "Soco paralisante",
+        picadaAbelha: "Picada de abelha",
+        avalancheManual: "Avalanche manual",
+        golpeCauterizador: "Golpe cauterizador",
+        murroAflicao: "Murro da aflição",
+        apunhaladaMortal: "Apunhalada mortal",
+        raioEnergia: "Raio de energia",
+        espinhosMagicos: "Espinhos mágicos",
+        trovaoIncandescente: "Trovão incandescente",
+        explosaoMistica: "Explosão mística",
+        soproDragao: "Sopro do dragão",
+    }
+    const tier = 31 - Math.clz32(props.nivel)
+
+    const golpes = tiposGolpes[props.tipoPersonagem]
+    const golpesDisponiveis = Array.from(
+        { length: Math.min(tier, golpes.length) },
+        (_, i) => golpes[i],
+    )
+    const labels = [
+        "Sem ataque",
+        ...golpesDisponiveis.map((golpe) => labelsAtaques[golpe]),
+    ]
+    const labelIdx = props.idx == null ? 0 : props.idx + 1
+    return (
+        <Select
+            value={labelIdx.toString()}
+            onValueChange={(e) => {
+                const labelIdx = parseInt(e)
+                props.onSelected(labelIdx === 0 ? null : labelIdx - 1)
+            }}
+        >
+            <SelectTrigger className="h-12 w-full border-slate-700 bg-slate-950">
+                <SelectValue placeholder="Selecione um ataque" />
+            </SelectTrigger>
+            <SelectContent>
+                {labels.map((label, idx) => {
+                    return (
+                        <SelectItem key={label} value={`${idx}`}>
+                            {label}
+                        </SelectItem>
+                    )
+                })}
+            </SelectContent>
+        </Select>
+    )
+}
+
 export default function GameDashboard() {
     const router = useRouter()
     const [state, setState] = useState<State | null>(null)
@@ -253,13 +325,19 @@ export default function GameDashboard() {
             router.replace("/")
             return
         }
+        const userData = JSON.parse(stored)
         setState({
+            partida: {
+                nomePersonagem: userData["nome"],
+                tipoPersonagem: userData["classe"],
+                dificuldade: userData["dificuldade"],
+            },
             jogador: {
                 hp: 100,
                 maxHp: 100,
                 forca: 10,
                 inteligencia: 0,
-                nivel: 1,
+                nivel: 4,
                 fome: 0,
                 xp: 0,
                 resistencias: {},
@@ -272,6 +350,7 @@ export default function GameDashboard() {
                 comidas: {},
                 bebidas: {},
             },
+            idxGolpe: null,
         })
     }, [router])
     useEffect(() => {
@@ -287,7 +366,7 @@ export default function GameDashboard() {
         return () => clearInterval(id)
     }, [])
     if (!state) return null
-    const { jogador, carteira, mochila } = state
+    const { partida, jogador, carteira, mochila } = state
     return (
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-12">
@@ -299,7 +378,7 @@ export default function GameDashboard() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6 pt-2">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
                                 <div className="space-y-4">
                                     <div className="space-y-1">
                                         <div className="flex justify-between text-xs font-bold uppercase">
@@ -449,23 +528,17 @@ export default function GameDashboard() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6 pt-2">
-                            <Select>
-                                <SelectTrigger className="h-12 w-full border-slate-700 bg-slate-950">
-                                    <SelectValue placeholder="Selecione um ataque" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="golpe">
-                                        Golpe Forte
-                                    </SelectItem>
-                                    <SelectItem value="fogo">
-                                        Bola de Fogo
-                                    </SelectItem>
-                                    <SelectItem value="esquiva">
-                                        Postura Defensiva
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-
+                            <AtaquesSelect
+                                nivel={jogador.nivel}
+                                tipoPersonagem={partida.tipoPersonagem}
+                                idx={state.idxGolpe}
+                                onSelected={(idxGolpe) =>
+                                    setState((state) => {
+                                        if (state == null) return null
+                                        return { ...state, idxGolpe: idxGolpe }
+                                    })
+                                }
+                            />
                             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                                 <div className="space-y-3">
                                     {Object.entries(labelsArmaduras).map(
