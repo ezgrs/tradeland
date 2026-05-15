@@ -41,17 +41,16 @@ type ExecutaPasseioArgs = {
     tipoPersonagem: TipoPersonagem
 }
 
-type RodadaBatalha = {
+export type RodadaBatalha = {
     jogador: Jogador
     inimigo: Inimigo
 }
 
 type BatalhaArgs = {
     jogador: Jogador
-    personagem: TipoPersonagem
+    tipoPersonagem: TipoPersonagem
     inimigo: Inimigo
     listener: JogadorListener<any>
-    nivelAtaque: number
 }
 
 export function executaBatalha(args: BatalhaArgs): RodadaBatalha {
@@ -62,7 +61,7 @@ export function executaBatalha(args: BatalhaArgs): RodadaBatalha {
             ...args.inimigo,
             hp:
                 args.inimigo.hp -
-                comportamentosPersonagens[args.personagem].calculaDano(
+                comportamentosPersonagens[args.tipoPersonagem].calculaDano(
                     jogador,
                     1,
                 ),
