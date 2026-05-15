@@ -5,3 +5,10 @@ export type TipoInimigo =
     | "gigante"
     | "bruxa"
     | "vampiro"
+
+export type Inimigo = {
+    tipo: TipoInimigo
+    nivel: number
+    hp: number
+    forca: number
+}

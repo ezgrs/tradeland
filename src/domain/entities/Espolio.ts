@@ -1,6 +1,6 @@
 import { TipoInimigo } from "./Inimigo"
 
-type ClasseEspolio = "a" | "b" | "c"
+export type ClasseEspolio = "a" | "b" | "c"
 
 export const espolios = {
     dragao: {
@@ -40,15 +40,22 @@ export const espolios = {
 
 type ElementOf<T> = T extends readonly (infer U)[] ? U : never
 
+export type EspolioInimigoQualificado<
+    E extends TipoInimigo,
+    C extends ClasseEspolio,
+> = {
+    [N in ElementOf<(typeof espolios)[E][C]> & string]: {
+        id: `${N}${Capitalize<E & string>}`
+        tipoInimigo: E
+        classe: C
+        tipo: N
+    }
+}[ElementOf<(typeof espolios)[E][C]> & string]
+
+export type EspolioInimigo<E extends TipoInimigo> = {
+    [C in ClasseEspolio]: EspolioInimigoQualificado<E, C>
+}[ClasseEspolio]
+
 export type Espolio = {
-    [E in keyof typeof espolios]: {
-        [C in keyof (typeof espolios)[E]]: {
-            [N in ElementOf<(typeof espolios)[E][C]> & string]: {
-                id: `${N}${Capitalize<E & string>}`
-                tipoInimigo: E
-                classe: C
-                tipo: N
-            }
-        }[ElementOf<(typeof espolios)[E][C]> & string]
-    }[keyof (typeof espolios)[E]]
-}[keyof typeof espolios]
+    [E in TipoInimigo]: EspolioInimigo<E>
+}[TipoInimigo]

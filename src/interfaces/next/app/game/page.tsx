@@ -54,8 +54,11 @@ import { Comida } from "@/src/domain/entities/Comida"
 import { Espolio } from "@/src/domain/entities/Espolio"
 import { TipoPocao } from "@/src/domain/entities/Pocao"
 import { Bebida } from "@/src/domain/entities/Bebida"
-import { TipoGolpe, tiposGolpes } from "@/src/domain/data/golpes"
-import { TipoPersonagem } from "@/src/domain/entities/Personagem"
+import {
+    comportamentosPersonagens,
+    TipoGolpe,
+    TipoPersonagem,
+} from "@/src/domain/entities/Personagem"
 import { Dificuldade } from "@/src/domain/entities/Dificuldade"
 
 type State = {
@@ -253,7 +256,7 @@ function AtaquesSelect(props: AtaquesSelectProps) {
     const labelsAtaques: Record<TipoGolpe<TipoPersonagem>, string> = {
         claraoLuz: "Clarão de luz",
         nevoaLacrimejante: "Névoa lacrimejante",
-        rajadaFogo: "Rajada de fogo",
+        raioFogo: "Raio de fogo",
         penitencia: "Penitência",
         choqueSagrado: "Choque sagrado",
         curaReversa: "Cura reversa",
@@ -264,6 +267,7 @@ function AtaquesSelect(props: AtaquesSelectProps) {
         murroAflicao: "Murro da aflição",
         apunhaladaMortal: "Apunhalada mortal",
         raioEnergia: "Raio de energia",
+        rajadaFogo: "Rajada de fogo",
         espinhosMagicos: "Espinhos mágicos",
         trovaoIncandescente: "Trovão incandescente",
         explosaoMistica: "Explosão mística",
@@ -271,7 +275,7 @@ function AtaquesSelect(props: AtaquesSelectProps) {
     }
     const tier = 31 - Math.clz32(props.nivel)
 
-    const golpes = tiposGolpes[props.tipoPersonagem]
+    const golpes = comportamentosPersonagens[props.tipoPersonagem].listaGolpes()
     const golpesDisponiveis = Array.from(
         { length: Math.min(tier, golpes.length) },
         (_, i) => golpes[i],
