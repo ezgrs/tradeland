@@ -114,7 +114,7 @@ export function executaPasseio(
                     const bebida: Bebida = new Pocao(
                         probabilidade.porChaves<TipoPocao>({
                             vida: 3,
-                            sagacidade: 1,
+                            inteligencia: 1,
                             forca: 1,
                         }),
                     )

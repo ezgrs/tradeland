@@ -76,7 +76,7 @@ const labelsComidas: Record<TipoAlimento, string> = {
 }
 const labelsPocoes: Record<TipoPocao, string> = {
     vida: "Vida",
-    sagacidade: "Sagacidade",
+    inteligencia: "Sagacidade",
     forca: "Força",
 }
 
@@ -86,6 +86,7 @@ type Props = {
     mochila: Mochila
 
     onEat: (food: TipoAlimento) => void
+    onDrink: (drink: TipoPocao) => void
 }
 
 type RowValue<K, V> = { tipo: K; valores: V[] } | null
@@ -223,12 +224,25 @@ export function InventorySection(props: Props) {
                                     {dadosBebida != null && (
                                         <div className="flex items-center gap-4">
                                             <span className="font-medium text-slate-400">
-                                                {labelsPocoes[dadosBebida.tipo]}
+                                                {dadosBebida.valores.length == 1
+                                                    ? labelsPocoes[
+                                                          dadosBebida.tipo
+                                                      ]
+                                                    : `${
+                                                          labelsPocoes[
+                                                              dadosBebida.tipo
+                                                          ]
+                                                      } (x${dadosBebida.valores.length})`}
                                             </span>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 className="h-7 border-slate-700 bg-slate-950 px-2 text-[10px] uppercase hover:bg-blue-950 hover:text-blue-400"
+                                                onClick={(_) =>
+                                                    props.onDrink(
+                                                        dadosBebida.tipo,
+                                                    )
+                                                }
                                             >
                                                 <IconMug className="h-4 w-4" />
                                             </Button>

@@ -102,6 +102,7 @@ type Props = {
     jogador: Jogador
     partida: Partida
     strikeIndex: number | null
+    potions: Record<"forca" | "inteligencia", number | undefined>
 
     onUpdateStrike: (idx: number | null) => void
 }
@@ -191,20 +192,29 @@ export function BattleSection(props: Props) {
                         )}
                     </div>
                     <div className="space-y-3">
-                        <div className="space-y-1">
-                            <div className="flex justify-between text-[10px] text-blue-400 uppercase">
-                                <span>Sagacidade</span>
-                                <span>120s</span>
-                            </div>
-                            <Progress value={60} className="h-2 bg-slate-800" />
-                        </div>
-                        <div className="space-y-1">
-                            <div className="flex justify-between text-[10px] text-red-400 uppercase">
-                                <span>Força Bruta</span>
-                                <span>45s</span>
-                            </div>
-                            <Progress value={30} className="h-2 bg-slate-800" />
-                        </div>
+                        {(["forca", "inteligencia"] as const).map((key) => {
+                            const labels: Record<
+                                "forca" | "inteligencia",
+                                string
+                            > = {
+                                forca: "Força",
+                                inteligencia: "Sagacidade",
+                            }
+                            const tempo = props.potions[key]
+                            if (tempo == null) return
+                            return (
+                                <div key={key} className="space-y-1">
+                                    <div className="flex justify-between text-[10px] text-blue-400 uppercase">
+                                        <span>{labels[key]}</span>
+                                        <span>{tempo} seg</span>
+                                    </div>
+                                    <Progress
+                                        value={(tempo / 60) * 100}
+                                        className="h-2 bg-slate-800"
+                                    />
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
             </CardContent>

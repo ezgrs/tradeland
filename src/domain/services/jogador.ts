@@ -9,7 +9,6 @@ export interface JogadorListener<R> {
     aumentaXp(jogador: Jogador, valor: number): R
     recebeDano(jogador: Jogador, dano: number): R
     come(jogador: Jogador, comida: Comida): R
-    bebe(jogador: Jogador, bebida: Bebida): R
 }
 
 export interface JogadorController<R> {
@@ -70,17 +69,6 @@ export class DefaultJogadorListener implements JogadorListener<Jogador> {
             jogador,
             -comida.calculaFomeRestaurada(),
         )
-    }
-
-    bebe(jogador: Jogador, bebida: Bebida): Jogador {
-        let j = jogador
-        j = this.controller.alteraHp(j, bebida.calculaHPRestaurado())
-        return {
-            ...j,
-            forca: j.forca + bebida.calculaForcaRestaurada(),
-            inteligencia:
-                j.inteligencia + bebida.calculaInteligenciaRestaurada(),
-        }
     }
 }
 

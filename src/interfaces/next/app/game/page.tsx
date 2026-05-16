@@ -103,8 +103,47 @@ export default function GameDashboard() {
         }, 60_000)
         return () => clearInterval(id)
     }, [])
+
+    type Efeito = {
+        forca: number
+        inteligencia: number
+        tempo: number
+    }
+    const [efeitos, setEfeitos] = useState<
+        Map<"forca" | "inteligencia", Efeito>
+    >(new Map())
+    const hasEfeitos = efeitos.size > 0
+    useEffect(() => {
+        if (!hasEfeitos) return
+        const id = setInterval(() => {
+            setEfeitos((efeitos) => {
+                const updatedEfeitos = new Map(efeitos)
+                for (const [tipoEfeito, efeito] of efeitos.entries()) {
+                    const novoTempo = efeito.tempo - 1
+                    if (novoTempo <= 0) {
+                        updatedEfeitos.delete(tipoEfeito)
+                    } else {
+                        updatedEfeitos.set(tipoEfeito, {
+                            ...efeito,
+                            tempo: novoTempo,
+                        })
+                    }
+                }
+                return updatedEfeitos
+            })
+        }, 1_000)
+        return () => clearInterval(id)
+    }, [hasEfeitos])
+
     if (!state) return null
-    const { partida, jogador, carteira, mochila } = state
+    const { partida, carteira, mochila } = state
+    const jogador = produce(state.jogador, (draft) => {
+        // Inclui efeitos ativos
+        for (const [_, efeito] of efeitos.entries()) {
+            draft.forca += efeito.forca
+            draft.inteligencia += efeito.inteligencia
+        }
+    })
     return (
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-12">
@@ -137,7 +176,7 @@ export default function GameDashboard() {
                                 const labelsPocoes: Record<TipoPocao, string> =
                                     {
                                         vida: "vida",
-                                        sagacidade: "sagacidade",
+                                        inteligencia: "sagacidade",
                                         forca: "força",
                                     }
                                 const tipoPocao = bebida.calculaTipo()
@@ -276,12 +315,65 @@ export default function GameDashboard() {
                                 }),
                             )
                         }}
+                        onDrink={(tipoPocao) => {
+                            setState(
+                                produce((draft) => {
+                                    const bebidas =
+                                        draft.mochila.bebidas[tipoPocao] ?? []
+                                    const bebida = bebidas.shift()
+                                    if (bebida == null) return
+
+                                    if (bebida.calculaTipoElixir() != null) {
+                                        draft.logs.unshift(
+                                            createLog(
+                                                "positivo",
+                                                "Esta poção foi tonificada e é mais potente!",
+                                            ),
+                                        )
+                                    }
+
+                                    const atributos = bebida.calculaAtributos()
+                                    draft.jogador =
+                                        jogadorRef.current.controller.alteraHp(
+                                            draft.jogador,
+                                            atributos.hp,
+                                        )
+
+                                    switch (tipoPocao) {
+                                        case "forca":
+                                        case "inteligencia":
+                                            setEfeitos((efeitos) =>
+                                                new Map(efeitos).set(
+                                                    tipoPocao,
+                                                    {
+                                                        forca: atributos.forca,
+                                                        inteligencia:
+                                                            atributos.inteligencia,
+                                                        tempo: 10,
+                                                    },
+                                                ),
+                                            )
+                                    }
+
+                                    if (bebidas.length === 0) {
+                                        delete draft.mochila.bebidas[tipoPocao]
+                                    } else {
+                                        draft.mochila.bebidas[tipoPocao] =
+                                            bebidas
+                                    }
+                                }),
+                            )
+                        }}
                     />
                     <BattleSection
                         title="Batalha"
                         jogador={jogador}
                         partida={partida}
                         strikeIndex={state.idxGolpe}
+                        potions={{
+                            forca: efeitos.get("forca")?.tempo,
+                            inteligencia: efeitos.get("inteligencia")?.tempo,
+                        }}
                         onUpdateStrike={(idx) => {
                             setState(
                                 produce((draft) => {

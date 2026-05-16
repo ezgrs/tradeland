@@ -1,6 +1,6 @@
 import { TipoPocao } from "../entities/Pocao"
 
-type AtributosPocao = {
+export type AtributosPocao = {
     preco: number
     hp: number
     forca: number
@@ -14,7 +14,7 @@ export const atributosPocoes: Record<TipoPocao, AtributosPocao> = {
         forca: 0,
         inteligencia: 0,
     },
-    sagacidade: {
+    inteligencia: {
         preco: 30,
         hp: 0,
         forca: 0,

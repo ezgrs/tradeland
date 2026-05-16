@@ -1,11 +1,13 @@
-import { atributosPocoes } from "../data/pocoes"
+import { produce } from "immer"
+import { AtributosPocao, atributosPocoes } from "../data/pocoes"
 import { TipoPocao } from "./Pocao"
+
+type TipoElixir = "forca" | "vida" | "inteligencia"
 
 export interface Bebida {
     calculaTipo(): TipoPocao
-    calculaHPRestaurado(): number
-    calculaInteligenciaRestaurada(): number
-    calculaForcaRestaurada(): number
+    calculaTipoElixir(): TipoElixir | null
+    calculaAtributos(): AtributosPocao
 }
 
 export class Pocao implements Bebida {
@@ -15,36 +17,30 @@ export class Pocao implements Bebida {
         return this.tipo
     }
 
-    calculaHPRestaurado(): number {
-        return atributosPocoes[this.tipo].hp
+    calculaTipoElixir(): TipoElixir | null {
+        return null
     }
 
-    calculaInteligenciaRestaurada(): number {
-        return atributosPocoes[this.tipo].inteligencia
-    }
-
-    calculaForcaRestaurada(): number {
-        return atributosPocoes[this.tipo].forca
+    calculaAtributos(): AtributosPocao {
+        return atributosPocoes[this.tipo]
     }
 }
 
 export class ElixirForca implements Bebida {
-    constructor(private bebivel: Bebida) {}
+    constructor(private bebida: Bebida) {}
 
     calculaTipo(): TipoPocao {
-        return this.bebivel.calculaTipo()
+        return this.bebida.calculaTipo()
     }
 
-    calculaHPRestaurado(): number {
-        return this.bebivel.calculaHPRestaurado()
+    calculaTipoElixir(): TipoElixir | null {
+        return "forca"
     }
 
-    calculaInteligenciaRestaurada(): number {
-        return this.bebivel.calculaInteligenciaRestaurada()
-    }
-
-    calculaForcaRestaurada(): number {
-        return this.bebivel.calculaForcaRestaurada() + 20
+    calculaAtributos(): AtributosPocao {
+        return produce(this.bebida.calculaAtributos(), (draft) => {
+            draft.forca += 20
+        })
     }
 }
 
@@ -55,16 +51,14 @@ export class ElixirInteligencia implements Bebida {
         return this.bebida.calculaTipo()
     }
 
-    calculaHPRestaurado(): number {
-        return this.bebida.calculaHPRestaurado()
+    calculaTipoElixir(): TipoElixir | null {
+        return "inteligencia"
     }
 
-    calculaInteligenciaRestaurada(): number {
-        return this.bebida.calculaInteligenciaRestaurada() + 20
-    }
-
-    calculaForcaRestaurada(): number {
-        return this.bebida.calculaForcaRestaurada()
+    calculaAtributos(): AtributosPocao {
+        return produce(this.bebida.calculaAtributos(), (draft) => {
+            draft.inteligencia += 20
+        })
     }
 }
 
@@ -75,15 +69,13 @@ export class ElixirVida implements Bebida {
         return this.bebida.calculaTipo()
     }
 
-    calculaHPRestaurado(): number {
-        return this.bebida.calculaHPRestaurado() + 20
+    calculaTipoElixir(): TipoElixir | null {
+        return "vida"
     }
 
-    calculaInteligenciaRestaurada(): number {
-        return this.bebida.calculaInteligenciaRestaurada()
-    }
-
-    calculaForcaRestaurada(): number {
-        return this.bebida.calculaForcaRestaurada()
+    calculaAtributos(): AtributosPocao {
+        return produce(this.bebida.calculaAtributos(), (draft) => {
+            draft.hp += 20
+        })
     }
 }
