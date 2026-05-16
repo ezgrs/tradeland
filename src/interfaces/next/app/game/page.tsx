@@ -383,13 +383,15 @@ export default function GameDashboard() {
                                 },
                             }}
                         />
-                        <Button variant="secondary" className="gap-2">
-                            <IconBuildingStore className="h-4 w-4" /> Visitar
-                            comerciante
-                        </Button>
-                        <Button variant="secondary" className="gap-2">
-                            <IconBong className="h-4 w-4" /> Visitar alquimista
-                        </Button>
+                        <div className="flex flex-wrap justify-center gap-4">
+                            <Button variant="secondary" className="gap-2">
+                                <IconBuildingStore className="h-4 w-4" /> Visitar
+                                comerciante
+                            </Button>
+                            <Button variant="secondary" className="gap-2">
+                                <IconBong className="h-4 w-4" /> Visitar alquimista
+                            </Button>
+                        </div>
                     </StatisticsSection>
                     <LogsSection
                         title="Logs de Registro"

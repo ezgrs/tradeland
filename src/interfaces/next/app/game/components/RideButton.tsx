@@ -111,7 +111,8 @@ export function RideButton(props: Props) {
                     passeioRef.current = null
                     setEhPasseio(false)
                 }}
-                variant="secondary"
+                variant="default"
+                size="lg"
                 className="gap-2"
             >
                 <IconHome className="h-4 w-4" /> {props.onLabel}
@@ -131,7 +132,8 @@ export function RideButton(props: Props) {
                 passeioRef.current = controller
                 setEhPasseio(true)
             }}
-            variant="secondary"
+            variant="default"
+            size="lg"
             className="gap-2"
         >
             <IconBrandSafari className="h-4 w-4" /> {props.offLabel}
