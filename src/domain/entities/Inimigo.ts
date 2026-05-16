@@ -10,5 +10,6 @@ export type Inimigo = {
     tipo: TipoInimigo
     nivel: number
     hp: number
+    maxHp: number
     forca: number
 }

@@ -34,7 +34,7 @@ export const comportamentosPersonagens = {
             }
         },
         calculaDano(jogador: Jogador, dano: number): number {
-            return dano + jogador.forca + jogador.hp / 10
+            return dano + jogador.forca / 10 + jogador.hp / 3
         },
     },
     gladiador: {
@@ -59,7 +59,7 @@ export const comportamentosPersonagens = {
             }
         },
         calculaDano(jogador: Jogador, dano: number): number {
-            return dano + jogador.forca + jogador.forca / 10
+            return dano + jogador.forca / 10 + jogador.forca / 5
         },
     },
     mago: {
@@ -85,7 +85,7 @@ export const comportamentosPersonagens = {
             }
         },
         calculaDano(jogador: Jogador, dano: number): number {
-            return dano + jogador.forca + jogador.sagacidade / 10
+            return dano + jogador.forca / 10 + jogador.sagacidade / 3
         },
     },
 } as const satisfies Record<string, ComportamentoPersonagem>

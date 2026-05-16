@@ -15,7 +15,7 @@ import { createLog } from "./models/Log"
 import { InventorySection } from "./components/InventorySection"
 import { StatisticsSection } from "./components/StatisticsSection"
 import { BattleSection } from "./components/BattleSection"
-import { TipoInimigo } from "@/src/domain/entities/Inimigo"
+import { Inimigo, TipoInimigo } from "@/src/domain/entities/Inimigo"
 import { Button } from "../../components/ui/button"
 import { IconBuildingStore, IconBong } from "@tabler/icons-react"
 import { RideButton } from "./components/RideButton"
@@ -24,6 +24,13 @@ import { produce } from "immer"
 import { Partida } from "./models/Partida"
 import { comportamentosPersonagens } from "@/src/domain/entities/Personagem"
 import { TipoPocao } from "@/src/domain/entities/Pocao"
+import { AchadoPasseio, executaPasseio } from "@/src/domain/services/passeio"
+import { ProbabilidadeAleatoria } from "@/src/infrastructure/services/Probabilidade/aleatoria"
+import { delay } from "../../lib/utils"
+import { Bebida } from "@/src/domain/entities/Bebida"
+import { Comida } from "@/src/domain/entities/Comida"
+import { FinalBatalha } from "./models/FinalBatalha"
+import { Golpe } from "@/src/domain/entities/Golpe"
 
 type JogadorState = {
     controller: JogadorController<Jogador>
@@ -87,6 +94,7 @@ export default function GameDashboard() {
                 bebidas: {},
             },
             golpe: null,
+            inimigo: null,
             logs: [],
         })
     }, [router])
@@ -159,6 +167,110 @@ export default function GameDashboard() {
 
     if (!state) return null
     const { jogador, partida, carteira, mochila } = state
+
+    function onEncontraMoedas(valor: number) {
+        setState(
+            produce((draft) => {
+                draft.logs.unshift(
+                    createLog("positivo", `Você encontrou ${valor} moedas!`),
+                )
+                draft.carteira.valor += valor
+            }),
+        )
+    }
+
+    function onEncontraComida(comida: Comida) {
+        const labelsAlimentos: Record<TipoAlimento, string> = {
+            uva: "uma uva",
+            maca: "uma maçã",
+            banana: "uma banana",
+            cenoura: "uma cenoura",
+            ensopado: "um ensopado",
+            frango: "um frango",
+        }
+        const tipoAlimento = comida.calculaTipo()
+        setState(
+            produce((draft) => {
+                draft.logs.unshift(
+                    createLog(
+                        "positivo",
+                        `Você encontrou ${labelsAlimentos[comida.calculaTipo()]}!`,
+                    ),
+                )
+                const comidas = (draft.mochila.comidas[tipoAlimento] ??= [])
+                comidas.push(comida)
+            }),
+        )
+    }
+
+    function onEncontraBebida(bebida: Bebida) {
+        const labelsPocoes: Record<TipoPocao, string> = {
+            vida: "vida",
+            sagacidade: "sagacidade",
+            forca: "força",
+        }
+        const tipoPocao = bebida.calculaTipo()
+        setState(
+            produce((draft) => {
+                draft.logs.unshift(
+                    createLog(
+                        "positivo",
+                        `Você encontrou uma poção de ${labelsPocoes[tipoPocao]}!`,
+                    ),
+                )
+                const bebidas = (draft.mochila.bebidas[tipoPocao] ??= [])
+                bebidas.push(bebida)
+            }),
+        )
+    }
+
+    function onEncontraInimigo(inimigo: Inimigo) {
+        const labelsInimigos: Record<TipoInimigo, string> = {
+            dragao: "um dragão",
+            trasgo: "um trasgo",
+            ogro: "um ogro",
+            gigante: "um gigante",
+            bruxa: "uma bruxa",
+            vampiro: "um vampiro",
+        }
+        setState(
+            produce((draft) => {
+                draft.logs.unshift(
+                    createLog(
+                        "neutro",
+                        `Você encontrou ${labelsInimigos[inimigo.tipo]}, prepare-se!`,
+                    ),
+                )
+                draft.inimigo = inimigo
+            }),
+        )
+    }
+
+    function onAtacaInimigo(inimigo: Inimigo, dano: number) {
+        const labelsInimigos: Record<TipoInimigo, string> = {
+            dragao: "no dragão",
+            trasgo: "no trasgo",
+            ogro: "no ogro",
+            gigante: "no gigante",
+            bruxa: "na bruxa",
+            vampiro: "no vampiro",
+        }
+        setState(
+            produce((draft) => {
+                draft.logs.unshift(
+                    createLog(
+                        "neutro",
+                        `Você causou ${dano} pontos de dano ${labelsInimigos[inimigo.tipo]}.`,
+                    ),
+                )
+                const novoHpInimigo = inimigo.hp - dano
+                if (novoHpInimigo > 0) {
+                    draft.inimigo = { ...inimigo, hp: novoHpInimigo }
+                }
+            }),
+        )
+    }
+
     return (
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-12">
@@ -171,95 +283,96 @@ export default function GameDashboard() {
                         <RideButton
                             offLabel="Iniciar passeio"
                             onLabel="Voltar pra casa"
-                            partida={partida}
-                            jogador={jogador}
-                            listener={jogadorRef.current.listener}
-                            onFindMoney={(qtd) => {
-                                setState(
-                                    produce((draft) => {
-                                        draft.logs.unshift(
-                                            createLog(
-                                                "positivo",
-                                                `Você encontrou ${qtd} moedas!`,
-                                            ),
-                                        )
-                                        draft.carteira.valor += qtd
-                                    }),
-                                )
-                            }}
-                            onFindDrink={(bebida) => {
-                                const labelsPocoes: Record<TipoPocao, string> =
-                                    {
-                                        vida: "vida",
-                                        sagacidade: "sagacidade",
-                                        forca: "força",
+                            traveler={{
+                                level(): number {
+                                    return jogador.nivel
+                                },
+                                async produceDamage(
+                                    inimigo: Inimigo,
+                                ): Promise<number> {
+                                    const tiers: Record<Golpe, number> = {
+                                        lvl1: 1,
+                                        lvl2: 2,
+                                        lvl3: 3,
+                                        lvl4: 4,
+                                        lvl5: 5,
+                                        lvl6: 6,
                                     }
-                                const tipoPocao = bebida.calculaTipo()
-                                setState(
-                                    produce((draft) => {
-                                        draft.logs.unshift(
-                                            createLog(
-                                                "positivo",
-                                                `Você encontrou uma poção de ${labelsPocoes[tipoPocao]}!`,
-                                            ),
-                                        )
-                                        const bebidas = (draft.mochila.bebidas[
-                                            tipoPocao
-                                        ] ??= [])
-                                        bebidas.push(bebida)
-                                    }),
-                                )
+                                    const danoGolpe =
+                                        state.golpe == null
+                                            ? 10
+                                            : (tiers[state.golpe] + 1) * 10
+                                    const dano = comportamentosPersonagens[
+                                        partida.tipoPersonagem
+                                    ].calculaDano(jogador, danoGolpe)
+                                    onAtacaInimigo(inimigo, dano)
+                                    return dano
+                                },
+                                async consumeDamage(
+                                    valor: number,
+                                ): Promise<void> {
+                                    setState(
+                                        produce((draft) => {
+                                            draft.jogador =
+                                                jogadorRef.current.listener.recebeDano(
+                                                    draft.jogador,
+                                                    valor,
+                                                )
+                                        }),
+                                    )
+                                    await delay(1000)
+                                },
                             }}
-                            onFindFood={(comida) => {
-                                const labelsAlimentos: Record<
-                                    TipoAlimento,
-                                    string
-                                > = {
-                                    uva: "uma uva",
-                                    maca: "uma maçã",
-                                    banana: "uma banana",
-                                    cenoura: "uma cenoura",
-                                    ensopado: "um ensopado",
-                                    frango: "um frango",
-                                }
-                                const tipoAlimento = comida.calculaTipo()
-                                setState(
-                                    produce((draft) => {
-                                        draft.logs.unshift(
-                                            createLog(
-                                                "positivo",
-                                                `Você encontrou ${labelsAlimentos[comida.calculaTipo()]}!`,
-                                            ),
-                                        )
-                                        const comidas = (draft.mochila.comidas[
-                                            tipoAlimento
-                                        ] ??= [])
-                                        comidas.push(comida)
-                                    }),
-                                )
-                            }}
-                            onFindEnemy={(tipoInimigo) => {
-                                const labelsInimigos: Record<
-                                    TipoInimigo,
-                                    string
-                                > = {
-                                    dragao: "um dragão",
-                                    trasgo: "um trasgo",
-                                    ogro: "um ogro",
-                                    gigante: "um gigante",
-                                    bruxa: "uma bruxa",
-                                    vampiro: "um vampiro",
-                                }
-                                setState(
-                                    produce((draft) => {
-                                        draft.logs.unshift(
-                                            createLog(
-                                                "neutro",
-                                                `Você encontrou ${labelsInimigos[tipoInimigo]}, prepare-se!`,
-                                            ),
-                                        )
-                                    }),
-                                )
+                            listener={{
+                                async onSomethingFound(): Promise<AchadoPasseio> {
+                                    const achado = executaPasseio(
+                                        new ProbabilidadeAleatoria(),
+                                        {
+                                            tipoPersonagem:
+                                                partida.tipoPersonagem,
+                                        },
+                                    )
+                                    switch (achado.tipo) {
+                                        case "bau":
+                                            switch (achado.item.tipo) {
+                                                case "dinheiro":
+                                                    onEncontraMoedas(
+                                                        achado.item.moedas,
+                                                    )
+                                                    break
+                                                case "bebida":
+                                                    onEncontraBebida(
+                                                        achado.item.bebida,
+                                                    )
+                                                    break
+                                                case "comida":
+                                                    onEncontraComida(
+                                                        achado.item.comida,
+                                                    )
+                                                    break
+                                            }
+                                            await delay(1000)
+                                            break
+                                        case "inimigo":
+                                            break
+                                    }
+                                    return achado
+                                },
+                                async onEnemyFound(
+                                    inimigo: Inimigo,
+                                ): Promise<void> {
+                                    onEncontraInimigo(inimigo)
+                                    await delay(5000)
+                                },
+                                async onBattleFinished(
+                                    _: FinalBatalha,
+                                ): Promise<void> {
+                                    setState(
+                                        produce((draft) => {
+                                            draft.inimigo = null
+                                        }),
+                                    )
+                                },
                             }}
                         />
                         <Button variant="secondary" className="gap-2">
@@ -385,6 +498,7 @@ export default function GameDashboard() {
                         jogador={jogador}
                         partida={partida}
                         golpe={state.golpe}
+                        inimigo={state.inimigo}
                         potions={{
                             forca: efeitos.get("forca")?.tempo,
                             sagacidade: efeitos.get("sagacidade")?.tempo,

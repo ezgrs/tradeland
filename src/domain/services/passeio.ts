@@ -21,8 +21,6 @@ import {
     TipoPersonagem,
 } from "../entities/Personagem"
 import { TipoPocao } from "../entities/Pocao"
-import { Jogador } from "../entities/Jogador"
-import { JogadorListener } from "./jogador"
 
 type AchadoBau = { tipo: "bau"; item: ItemBau }
 type AchadoInimigo = {
@@ -39,34 +37,6 @@ type ItemBau = ComidaBau | BebidaBau | DinheiroBau
 
 type ExecutaPasseioArgs = {
     tipoPersonagem: TipoPersonagem
-}
-
-export type RodadaBatalha = {
-    jogador: Jogador
-    inimigo: Inimigo
-}
-
-type BatalhaArgs = {
-    jogador: Jogador
-    tipoPersonagem: TipoPersonagem
-    inimigo: Inimigo
-    listener: JogadorListener<any>
-}
-
-export function executaBatalha(args: BatalhaArgs): RodadaBatalha {
-    const jogador = args.listener.recebeDano(args.jogador, args.inimigo.forca)
-    return {
-        jogador: jogador,
-        inimigo: {
-            ...args.inimigo,
-            hp:
-                args.inimigo.hp -
-                comportamentosPersonagens[args.tipoPersonagem].calculaDano(
-                    jogador,
-                    1,
-                ),
-        },
-    }
 }
 
 export function executaPasseio(

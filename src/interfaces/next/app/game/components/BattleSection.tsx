@@ -9,10 +9,7 @@ import {
 } from "../../../components/ui/card"
 import { cn } from "../../../lib/utils"
 import { Progress } from "../../../components/ui/progress"
-import {
-    TipoPersonagem,
-    comportamentosPersonagens,
-} from "@/src/domain/entities/Personagem"
+import { TipoPersonagem } from "@/src/domain/entities/Personagem"
 import {
     SelectTrigger,
     SelectValue,
@@ -23,6 +20,7 @@ import {
 import { Jogador } from "@/src/domain/entities/Jogador"
 import { Golpe } from "@/src/domain/entities/Golpe"
 import { Partida } from "../models/Partida"
+import { Inimigo, TipoInimigo } from "@/src/domain/entities/Inimigo"
 
 const labelsArmaduras: Record<TipoArmadura, string> = {
     elmo: "Elmo",
@@ -35,7 +33,7 @@ type AtaquesSelectProps = {
     nivel: number
     tipoPersonagem: TipoPersonagem
     golpe: Golpe | null
-    onSelected: (golpe: Golpe | null) => void
+    onSelected: ((golpe: Golpe | null) => void) | null
 }
 
 const labelsGolpes: Record<TipoPersonagem, Record<Golpe, string>> = {
@@ -68,6 +66,7 @@ const labelsGolpes: Record<TipoPersonagem, Record<Golpe, string>> = {
 const enumGolpes = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"] as const
 
 function AtaquesSelect(props: AtaquesSelectProps) {
+    const { onSelected } = props
     const tier = Math.min(
         Math.max(0, 31 - Math.clz32(props.nivel)),
         enumGolpes.length - 1,
@@ -79,9 +78,14 @@ function AtaquesSelect(props: AtaquesSelectProps) {
     return (
         <Select
             value={props.golpe == null ? "_" : props.golpe}
-            onValueChange={(golpe) => {
-                props.onSelected(golpe == "_" ? null : (golpe as Golpe))
-            }}
+            onValueChange={
+                onSelected == null
+                    ? undefined
+                    : (golpe) => {
+                          onSelected(golpe == "_" ? null : (golpe as Golpe))
+                      }
+            }
+            disabled={onSelected != null}
         >
             <SelectTrigger className="h-12 w-full border-slate-700 bg-slate-950">
                 <SelectValue placeholder="Selecione um ataque" />
@@ -108,14 +112,24 @@ type Props = {
 
     jogador: Jogador
     partida: Partida
+    inimigo: Inimigo | null
     golpe: Golpe | null
     potions: Record<"forca" | "sagacidade", number | undefined>
 
     onUpdateGolpe: (golpe: Golpe | null) => void
 }
 
+const labelsInimigos: Record<TipoInimigo, string> = {
+    dragao: "Dragão",
+    trasgo: "Trasgo",
+    ogro: "Ogro",
+    gigante: "Gigante",
+    bruxa: "Bruxa",
+    vampiro: "Vampiro",
+}
+
 export function BattleSection(props: Props) {
-    const { jogador, partida } = props
+    const { jogador, partida, inimigo } = props
     return (
         <Card className="border-slate-800 bg-slate-900">
             <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 px-6 py-1">
@@ -124,11 +138,25 @@ export function BattleSection(props: Props) {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pt-2">
+                {inimigo != null && (
+                    <div className="space-y-1">
+                        <div className="flex justify-between text-xs font-bold uppercase">
+                            <span>{labelsInimigos[inimigo.tipo]}</span>
+                            <span>
+                                {inimigo.hp}/{inimigo.maxHp}
+                            </span>
+                        </div>
+                        <Progress
+                            value={(inimigo.hp / inimigo.maxHp) * 100}
+                            className="h-3 bg-slate-800"
+                        />
+                    </div>
+                )}
                 <AtaquesSelect
                     nivel={jogador.nivel}
                     tipoPersonagem={partida.tipoPersonagem}
                     golpe={props.golpe}
-                    onSelected={props.onUpdateGolpe}
+                    onSelected={inimigo == null ? null : props.onUpdateGolpe}
                 />
                 <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                     <div className="space-y-3">

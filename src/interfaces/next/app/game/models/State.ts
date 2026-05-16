@@ -4,6 +4,7 @@ import { Mochila } from "@/src/domain/entities/Mochila"
 import { Log } from "./Log"
 import { Partida } from "./Partida"
 import { Golpe } from "@/src/domain/entities/Golpe"
+import { Inimigo } from "@/src/domain/entities/Inimigo"
 
 export type State = {
     partida: Partida
@@ -11,5 +12,6 @@ export type State = {
     carteira: Carteira
     mochila: Mochila
     golpe: Golpe | null
+    inimigo: Inimigo | null
     logs: Log[]
 }

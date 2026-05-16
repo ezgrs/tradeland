@@ -1,98 +1,98 @@
-import {
-    AchadoPasseio,
-    executaBatalha,
-    executaPasseio,
-    RodadaBatalha,
-} from "@/src/domain/services/passeio"
-import { ProbabilidadeAleatoria } from "@/src/infrastructure/services/Probabilidade/aleatoria"
+import { AchadoPasseio } from "@/src/domain/services/passeio"
 import { IconBrandSafari, IconHome } from "@tabler/icons-react"
 import { Button } from "../../../components/ui/button"
-import { delay } from "../../../lib/utils"
 import { useRef, useState } from "react"
 import { Espolio } from "@/src/domain/entities/Espolio"
-import { Probabilidade } from "@/src/domain/entities/Probabilidade"
-import { TipoPersonagem } from "@/src/domain/entities/Personagem"
-import { Jogador } from "@/src/domain/entities/Jogador"
-import { JogadorListener } from "@/src/domain/services/jogador"
-import { Partida } from "../models/Partida"
-import { Bebida } from "@/src/domain/entities/Bebida"
-import { Comida } from "@/src/domain/entities/Comida"
-import { TipoInimigo } from "@/src/domain/entities/Inimigo"
+import { Inimigo } from "@/src/domain/entities/Inimigo"
+import { JogadorMorreu } from "@/src/domain/errors/JogadorMorreu"
+import { FinalBatalha } from "../models/FinalBatalha"
 
-type PasseioArgs = {
+export interface Traveler {
+    level(): number
+    produceDamage(enemy: Inimigo): Promise<number>
+    consumeDamage(amount: number): Promise<void>
+}
+
+interface TravelListener {
+    onSomethingFound(): Promise<AchadoPasseio>
+    onEnemyFound(enemy: Inimigo): Promise<void>
+    onBattleFinished(reason: FinalBatalha): Promise<void>
+}
+
+type TravelArgs = {
+    traveler: Traveler
+    listener: TravelListener
     signal: AbortSignal
-    probabilidade: Probabilidade
-    tipoPersonagem: TipoPersonagem
-    jogador: Jogador
-    onAchado: (achado: AchadoPasseio) => Promise<void>
-    onRodadaBatalha: (rodada: RodadaBatalha) => Promise<void>
-    onCovarde: () => Promise<void>
-    listener: JogadorListener<any>
 }
 
 type DadosPasseio = {
     controller: AbortController
 }
 
-async function passeia(args: PasseioArgs): Promise<void> {
+async function travel(args: TravelArgs): Promise<void> {
+    const { traveler, listener } = args
     type Event =
-        | { type: "passeio" }
-        | { type: "batalha"; recompensa: Espolio | null; rodada: RodadaBatalha }
+        | { action: "walking" }
+        | { action: "fighting"; reward: Espolio | null; enemy: Inimigo }
 
-    let currentJogador = args.jogador
-    let currentEvent: Event = { type: "passeio" }
+    let currentEvent: Event = { action: "walking" }
     while (!args.signal.aborted) {
-        switch (currentEvent.type) {
-            case "passeio":
-                const achado = executaPasseio(args.probabilidade, {
-                    tipoPersonagem: args.tipoPersonagem,
-                })
-                await args.onAchado(achado)
-                switch (achado.tipo) {
+        switch (currentEvent.action) {
+            case "walking":
+                const finding = await listener.onSomethingFound()
+                switch (finding.tipo) {
                     case "bau":
-                        currentEvent = { type: "passeio" }
+                        currentEvent = { action: "walking" }
                         break
                     case "inimigo":
-                        currentEvent = {
-                            type: "batalha",
-                            recompensa: achado.recompensa,
-                            rodada: {
-                                inimigo: {
-                                    tipo: achado.tipoInimigo,
-                                    nivel: currentJogador.nivel,
-                                    hp: currentJogador.nivel * 20 + 50,
-                                    forca: currentJogador.nivel + 2,
-                                },
-                                jogador: currentJogador,
-                            },
+                        const level = traveler.level()
+                        const hp = level * 20 + 50
+                        const enemy = {
+                            tipo: finding.tipoInimigo,
+                            nivel: level,
+                            hp: hp,
+                            maxHp: hp,
+                            forca: level + 2,
                         }
+                        currentEvent = {
+                            action: "fighting",
+                            reward: finding.recompensa,
+                            enemy: enemy,
+                        }
+                        await listener.onEnemyFound(enemy)
                         break
                 }
                 break
-            case "batalha":
-                const proximaRodada = executaBatalha({
-                    inimigo: currentEvent.rodada.inimigo,
-                    jogador: currentEvent.rodada.jogador,
-                    tipoPersonagem: args.tipoPersonagem,
-                    listener: args.listener,
-                })
-                if (
-                    proximaRodada.inimigo.hp <= 0 ||
-                    proximaRodada.jogador.hp <= 0
-                ) {
-                    currentEvent = { type: "passeio" }
-                } else {
-                    await args.onRodadaBatalha(proximaRodada)
-                    currentEvent = {
-                        type: "batalha",
-                        recompensa: currentEvent.recompensa,
-                        rodada: proximaRodada,
-                    }
+            case "fighting":
+                const enemy: Inimigo = currentEvent.enemy
+                const appliedDamage = await traveler.produceDamage(enemy)
+                const newEnemyHp = enemy.hp - appliedDamage
+                if (newEnemyHp <= 0) {
+                    await listener.onBattleFinished("vitoria")
+                    currentEvent = { action: "walking" }
+                    break
                 }
+
+                const receivedDamage = enemy.forca
+                try {
+                    await traveler.consumeDamage(receivedDamage)
+                } catch (e) {
+                    if (e instanceof JogadorMorreu) {
+                        await listener.onBattleFinished("morte")
+                        return
+                    }
+                    throw e
+                }
+                currentEvent = {
+                    action: "fighting",
+                    reward: currentEvent.reward,
+                    enemy: { ...enemy, hp: newEnemyHp },
+                }
+                break
         }
     }
-    if (currentEvent?.type == "batalha") {
-        await args.onCovarde()
+    if (currentEvent?.action == "fighting") {
+        await listener.onBattleFinished("fuga")
     }
 }
 
@@ -100,20 +100,11 @@ type Props = {
     offLabel: string
     onLabel: string
 
-    jogador: Jogador
-    partida: Partida
-
-    listener: JogadorListener<any>
-
-    onFindMoney: (amount: number) => void
-    onFindDrink: (drink: Bebida) => void
-    onFindFood: (food: Comida) => void
-    onFindEnemy: (enemy: TipoInimigo) => void
+    traveler: Traveler
+    listener: TravelListener
 }
 
 export function RideButton(props: Props) {
-    const { jogador, partida } = props
-
     const passeioRef = useRef<DadosPasseio | null>(null)
     const [ehPasseio, setEhPasseio] = useState<boolean>(false)
     if (ehPasseio) {
@@ -136,41 +127,10 @@ export function RideButton(props: Props) {
         <Button
             onClick={(_) => {
                 const controller = new AbortController()
-                passeia({
+                travel({
                     signal: controller.signal,
-                    jogador: jogador,
-                    tipoPersonagem: partida.tipoPersonagem,
-                    probabilidade: new ProbabilidadeAleatoria(),
+                    traveler: props.traveler,
                     listener: props.listener,
-                    async onAchado(achado: AchadoPasseio): Promise<void> {
-                        switch (achado.tipo) {
-                            case "bau":
-                                switch (achado.item.tipo) {
-                                    case "dinheiro":
-                                        const moedas = achado.item.moedas
-                                        props.onFindMoney(moedas)
-                                        break
-                                    case "bebida":
-                                        const bebida = achado.item.bebida
-                                        props.onFindDrink(bebida)
-                                        break
-                                    case "comida":
-                                        const comida = achado.item.comida
-                                        props.onFindFood(comida)
-                                        break
-                                }
-                                await delay(1000)
-                                break
-                            case "inimigo":
-                                props.onFindEnemy(achado.tipoInimigo)
-                                await delay(5000)
-                                break
-                        }
-                    },
-                    async onRodadaBatalha(
-                        rodada: RodadaBatalha,
-                    ): Promise<void> {},
-                    async onCovarde(): Promise<void> {},
                 })
                 passeioRef.current = { controller }
                 setEhPasseio(true)
