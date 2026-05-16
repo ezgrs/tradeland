@@ -135,7 +135,7 @@ export default function GameDashboard() {
         return () => clearInterval(id)
     }, [hasEfeitos])
 
-    const state = produce(_state, draft => {
+    const state = produce(_state, (draft) => {
         if (draft == null) return
         // Inclui efeitos ativos
         for (const [_, efeito] of efeitos.entries()) {
@@ -143,6 +143,20 @@ export default function GameDashboard() {
             draft.jogador.sagacidade += efeito.sagacidade
         }
     })
+    const tier =
+        state == null ? null : Math.min(31 - Math.clz32(state.jogador.nivel), 6)
+    useEffect(() => {
+        if (tier == null) return
+        if (tier < 2) return
+        setState(
+            produce((draft) => {
+                draft.logs.unshift(
+                    createLog("inesperado", "Você desbloqueou um novo ataque!"),
+                )
+            }),
+        )
+    }, [tier])
+
     if (!state) return null
     const { jogador, partida, carteira, mochila } = state
     return (
