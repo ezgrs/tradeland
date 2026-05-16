@@ -68,7 +68,7 @@ export class DefaultJogadorListener implements JogadorListener<Jogador> {
     come(jogador: Jogador, comida: Comida): Jogador {
         return this.controller.alteraFome(
             jogador,
-            comida.calculaFomeRestaurada(),
+            -comida.calculaFomeRestaurada(),
         )
     }
 
