@@ -16,6 +16,9 @@ import { InventorySection } from "./components/InventorySection"
 import { StatisticsSection } from "./components/StatisticsSection"
 import { BattleSection } from "./components/BattleSection"
 import { TipoInimigo } from "@/src/domain/entities/Inimigo"
+import { Button } from "../../components/ui/button"
+import { IconBuildingStore, IconBong } from "@tabler/icons-react"
+import { RideButton } from "./components/RideButton"
 
 type JogadorState = {
     controller: JogadorController<Jogador>
@@ -97,53 +100,60 @@ export default function GameDashboard() {
                 <div className="space-y-6 lg:col-span-6">
                     <StatisticsSection
                         title="Estatísticas"
-                        partida={partida}
                         jogador={jogador}
                         carteira={carteira}
-                        listener={jogadorRef.current.listener}
-                        onFindMoney={(qtd) => {
-                            setState((state) => ({
-                                ...state,
-                                logs: [
-                                    createLog(
-                                        "positivo",
-                                        `Você encontrou ${qtd} moedas!`,
-                                    ),
-                                    ...state.logs,
-                                ],
-                                carteira: {
-                                    ...state.carteira,
-                                    valor: state.carteira.valor + qtd,
-                                },
-                            }))
-                        }}
-                        onFindDrink={(_) => {
-                            setState((state) => ({
-                                ...state,
-                                logs: [
-                                    createLog(
-                                        "positivo",
-                                        `Você encontrou uma bebida!`,
-                                    ),
-                                    ...state.logs,
-                                ],
-                            }))
-                        }}
-                        onFindFood={(_) => {
-                            setState((state) => ({
-                                ...state,
-                                logs: [
-                                    createLog(
-                                        "positivo",
-                                        `Você encontrou uma comida!`,
-                                    ),
-                                    ...state.logs,
-                                ],
-                            }))
-                        }}
-                        onFindEnemy={(tipoInimigo) => {
-                            const labelsInimigos: Record<TipoInimigo, string> =
-                                {
+                    >
+                        <RideButton
+                            offLabel="Iniciar passeio"
+                            onLabel="Voltar pra casa"
+                            partida={partida}
+                            jogador={jogador}
+                            listener={jogadorRef.current.listener}
+                            onFindMoney={(qtd) => {
+                                setState((state) => ({
+                                    ...state,
+                                    logs: [
+                                        createLog(
+                                            "positivo",
+                                            `Você encontrou ${qtd} moedas!`,
+                                        ),
+                                        ...state.logs,
+                                    ],
+                                    carteira: {
+                                        ...state.carteira,
+                                        valor: state.carteira.valor + qtd,
+                                    },
+                                }))
+                            }}
+                            onFindDrink={(_) => {
+                                setState((state) => ({
+                                    ...state,
+                                    logs: [
+                                        createLog(
+                                            "positivo",
+                                            `Você encontrou uma bebida!`,
+                                        ),
+                                        ...state.logs,
+                                    ],
+                                }))
+                            }}
+                            onFindFood={(_) => {
+                                setState((state) => ({
+                                    ...state,
+                                    logs: [
+                                        createLog(
+                                            "positivo",
+                                            `Você encontrou uma comida!`,
+                                        ),
+                                        ...state.logs,
+                                    ],
+                                }))
+                            }}
+                            onFindEnemy={(tipoInimigo) => {
+                                const labelsInimigos: Record<
+                                    TipoInimigo,
+                                    string
+                                > = {
                                     dragao: "dragão",
                                     trasgo: "trasgo",
                                     ogro: "ogro",
@@ -151,18 +161,26 @@ export default function GameDashboard() {
                                     bruxa: "bruxa",
                                     vampiro: "vampiro",
                                 }
-                            setState((state) => ({
-                                ...state,
-                                logs: [
-                                    createLog(
-                                        "neutro",
-                                        `Você encontrou um ${labelsInimigos[tipoInimigo]}, prepare-se!`,
-                                    ),
-                                    ...state.logs,
-                                ],
-                            }))
-                        }}
-                    />
+                                setState((state) => ({
+                                    ...state,
+                                    logs: [
+                                        createLog(
+                                            "neutro",
+                                            `Você encontrou um ${labelsInimigos[tipoInimigo]}, prepare-se!`,
+                                        ),
+                                        ...state.logs,
+                                    ],
+                                }))
+                            }}
+                        />
+                        <Button variant="secondary" className="gap-2">
+                            <IconBuildingStore className="h-4 w-4" /> Visitar
+                            comerciante
+                        </Button>
+                        <Button variant="secondary" className="gap-2">
+                            <IconBong className="h-4 w-4" /> Visitar alquimista
+                        </Button>
+                    </StatisticsSection>
                     <LogsSection
                         title="Logs de Registro"
                         logs={state.logs}
