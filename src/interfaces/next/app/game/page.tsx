@@ -165,7 +165,7 @@ export default function GameDashboard() {
                                                 `Você encontrou ${labelsAlimentos[comida.calculaTipo()]}!`,
                                             ),
                                         )
-                                        const comidas = (state.mochila.comidas[
+                                        const comidas = (draft.mochila.comidas[
                                             tipoAlimento
                                         ] ??= [])
                                         comidas.push(comida)
