@@ -234,7 +234,7 @@ export default function GameDashboard() {
                                             draft.logs.unshift(
                                                 createLog(
                                                     "negativo",
-                                                    "Alguém colocou algo amargo nisso, sua fome aumentou!",
+                                                    "Alguém amargou isso, sua fome piorou!",
                                                 ),
                                             )
                                             break
@@ -242,7 +242,7 @@ export default function GameDashboard() {
                                             draft.logs.unshift(
                                                 createLog(
                                                     "positivo",
-                                                    "Alguém colocou algo gostoso nisso, sua fome diminuiu!",
+                                                    "Alguém colocou algo gostoso nisso, sua fome melhorou!",
                                                 ),
                                             )
                                             break
