@@ -175,6 +175,7 @@ export default function GameDashboard() {
                 <div className="space-y-6 lg:col-span-6">
                     <InventorySection mochila={mochila} />
                     <BattleSection
+                        title="Batalha"
                         jogador={jogador}
                         partida={partida}
                         strikeIndex={state.idxGolpe}

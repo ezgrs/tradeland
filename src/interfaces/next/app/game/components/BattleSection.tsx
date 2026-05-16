@@ -97,9 +97,12 @@ function AtaquesSelect(props: AtaquesSelectProps) {
 }
 
 type Props = {
+    title: string
+
     jogador: Jogador
     partida: Partida
     strikeIndex: number | null
+
     onUpdateStrike: (idx: number | null) => void
 }
 
@@ -109,7 +112,7 @@ export function BattleSection(props: Props) {
         <Card className="border-slate-800 bg-slate-900">
             <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 px-6 py-1">
                 <CardTitle className="text-sm font-medium tracking-wider text-slate-400 uppercase">
-                    Batalha
+                    {props.title}
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pt-2">
