@@ -19,6 +19,7 @@ import { TipoInimigo } from "@/src/domain/entities/Inimigo"
 import { Button } from "../../components/ui/button"
 import { IconBuildingStore, IconBong } from "@tabler/icons-react"
 import { RideButton } from "./components/RideButton"
+import { TipoAlimento } from "@/src/domain/entities/Alimento"
 
 type JogadorState = {
     controller: JogadorController<Jogador>
@@ -137,16 +138,40 @@ export default function GameDashboard() {
                                     ],
                                 }))
                             }}
-                            onFindFood={(_) => {
+                            onFindFood={(comida) => {
+                                const labelsAlimentos: Record<
+                                    TipoAlimento,
+                                    string
+                                > = {
+                                    uva: "uma uva",
+                                    maca: "uma maçã",
+                                    banana: "uma banana",
+                                    cenoura: "uma cenoura",
+                                    ensopado: "um ensopado",
+                                    frango: "um frango",
+                                }
+                                const tipoAlimento = comida.calculaTipo()
                                 setState((state) => ({
                                     ...state,
                                     logs: [
                                         createLog(
                                             "positivo",
-                                            `Você encontrou uma comida!`,
+                                            `Você encontrou ${labelsAlimentos[comida.calculaTipo()]}!`,
                                         ),
                                         ...state.logs,
                                     ],
+                                    mochila: {
+                                        ...state.mochila,
+                                        comidas: {
+                                            ...state.mochila.comidas,
+                                            [tipoAlimento]: [
+                                                ...(state.mochila.comidas[
+                                                    tipoAlimento
+                                                ] ?? []),
+                                                comida,
+                                            ],
+                                        },
+                                    },
                                 }))
                             }}
                             onFindEnemy={(tipoInimigo) => {

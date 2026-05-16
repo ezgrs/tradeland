@@ -164,11 +164,15 @@ export function InventorySection(props: Props) {
                                     {dadosComida != null && (
                                         <div className="flex items-center gap-4">
                                             <span className="font-medium text-slate-400">
-                                                {
-                                                    labelsComidas[
-                                                        dadosComida.tipo
-                                                    ]
-                                                }
+                                                {dadosComida.valores.length == 1
+                                                    ? labelsComidas[
+                                                          dadosComida.tipo
+                                                      ]
+                                                    : `${
+                                                          labelsComidas[
+                                                              dadosComida.tipo
+                                                          ]
+                                                      } (x${dadosComida.valores.length})`}
                                             </span>
                                             <Button
                                                 variant="outline"
