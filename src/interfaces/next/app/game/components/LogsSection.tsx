@@ -18,14 +18,16 @@ export function LogsSection(props: Props) {
                 <CardTitle className="text-sm font-medium tracking-wider text-slate-400 uppercase">
                     {props.title}
                 </CardTitle>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-slate-500 hover:text-red-400"
-                    onClick={(_) => props.onClearLogs()}
-                >
-                    <IconTrash className="h-4 w-4" />
-                </Button>
+                {props.logs.length > 0 && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-500 hover:text-red-400"
+                        onClick={(_) => props.onClearLogs()}
+                    >
+                        <IconTrash className="h-4 w-4" />
+                    </Button>
+                )}
             </CardHeader>
             <ScrollArea className="max-h-[200px] p-4 font-mono text-sm text-slate-400">
                 {props.logs.map((log) => {
