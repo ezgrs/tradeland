@@ -5,7 +5,6 @@ export interface ComportamentoPersonagem {
     quandoSobeNivel(jogador: Jogador, nivel: number): Jogador
     quandoVenceBatalha(jogador: Jogador): Jogador
     calculaDano(jogador: Jogador, dano: number): number
-    listaGolpes(): readonly string[]
 }
 
 export const comportamentosPersonagens = {
@@ -37,16 +36,6 @@ export const comportamentosPersonagens = {
         calculaDano(jogador: Jogador, dano: number): number {
             return dano + jogador.forca + jogador.hp / 10
         },
-        listaGolpes() {
-            return [
-                "claraoLuz",
-                "nevoaLacrimejante",
-                "raioFogo",
-                "penitencia",
-                "choqueSagrado",
-                "curaReversa",
-            ] as const
-        },
     },
     gladiador: {
         quandoEhCriado(jogador: Jogador): Jogador {
@@ -71,16 +60,6 @@ export const comportamentosPersonagens = {
         },
         calculaDano(jogador: Jogador, dano: number): number {
             return dano + jogador.forca + jogador.forca / 10
-        },
-        listaGolpes() {
-            return [
-                "socoParalisante",
-                "picadaAbelha",
-                "avalancheManual",
-                "golpeCauterizador",
-                "murroAflicao",
-                "apunhaladaMortal",
-            ] as const
         },
     },
     mago: {
@@ -108,20 +87,7 @@ export const comportamentosPersonagens = {
         calculaDano(jogador: Jogador, dano: number): number {
             return dano + jogador.forca + jogador.sagacidade / 10
         },
-        listaGolpes() {
-            return [
-                "raioEnergia",
-                "espinhosMagicos",
-                "rajadaFogo",
-                "trovaoIncandescente",
-                "explosaoMistica",
-                "soproDragao",
-            ] as const
-        },
     },
 } as const satisfies Record<string, ComportamentoPersonagem>
 
 export type TipoPersonagem = keyof typeof comportamentosPersonagens
-export type TipoGolpe<T extends TipoPersonagem> = ReturnType<
-    (typeof comportamentosPersonagens)[T]["listaGolpes"]
->[number]

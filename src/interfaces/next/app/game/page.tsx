@@ -86,7 +86,7 @@ export default function GameDashboard() {
                 comidas: {},
                 bebidas: {},
             },
-            idxGolpe: null,
+            golpe: null,
             logs: [],
         })
     }, [router])
@@ -369,15 +369,15 @@ export default function GameDashboard() {
                         title="Batalha"
                         jogador={jogador}
                         partida={partida}
-                        strikeIndex={state.idxGolpe}
+                        golpe={state.golpe}
                         potions={{
                             forca: efeitos.get("forca")?.tempo,
                             sagacidade: efeitos.get("sagacidade")?.tempo,
                         }}
-                        onUpdateStrike={(idx) => {
+                        onUpdateGolpe={(golpe) => {
                             setState(
                                 produce((draft) => {
-                                    draft.idxGolpe = idx
+                                    draft.golpe = golpe
                                 }),
                             )
                         }}

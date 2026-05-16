@@ -11,7 +11,6 @@ import { cn } from "../../../lib/utils"
 import { Progress } from "../../../components/ui/progress"
 import {
     TipoPersonagem,
-    TipoGolpe,
     comportamentosPersonagens,
 } from "@/src/domain/entities/Personagem"
 import {
@@ -22,6 +21,7 @@ import {
     Select,
 } from "../../../components/ui/select"
 import { Jogador } from "@/src/domain/entities/Jogador"
+import { Golpe } from "@/src/domain/entities/Golpe"
 import { Partida } from "../models/Partida"
 
 const labelsArmaduras: Record<TipoArmadura, string> = {
@@ -31,62 +31,69 @@ const labelsArmaduras: Record<TipoArmadura, string> = {
     botas: "Botas",
 }
 
-const labelsAtaques: Record<TipoGolpe<TipoPersonagem>, string> = {
-    claraoLuz: "Clarão de luz",
-    nevoaLacrimejante: "Névoa lacrimejante",
-    raioFogo: "Raio de fogo",
-    penitencia: "Penitência",
-    choqueSagrado: "Choque sagrado",
-    curaReversa: "Cura reversa",
-    socoParalisante: "Soco paralisante",
-    picadaAbelha: "Picada de abelha",
-    avalancheManual: "Avalanche manual",
-    golpeCauterizador: "Golpe cauterizador",
-    murroAflicao: "Murro da aflição",
-    apunhaladaMortal: "Apunhalada mortal",
-    raioEnergia: "Raio de energia",
-    rajadaFogo: "Rajada de fogo",
-    espinhosMagicos: "Espinhos mágicos",
-    trovaoIncandescente: "Trovão incandescente",
-    explosaoMistica: "Explosão mística",
-    soproDragao: "Sopro do dragão",
-}
-
 type AtaquesSelectProps = {
     nivel: number
     tipoPersonagem: TipoPersonagem
-    idx: number | null
-    onSelected: (idx: number | null) => void
+    golpe: Golpe | null
+    onSelected: (golpe: Golpe | null) => void
 }
 
-function AtaquesSelect(props: AtaquesSelectProps) {
-    const tier = 31 - Math.clz32(props.nivel)
+const labelsGolpes: Record<TipoPersonagem, Record<Golpe, string>> = {
+    curandeiro: {
+        lvl1: "Clarão de luz",
+        lvl2: "Névoa lacrimejante",
+        lvl3: "Raio de fogo",
+        lvl4: "Penitência",
+        lvl5: "Choque sagrado",
+        lvl6: "Cura reversa",
+    },
+    gladiador: {
+        lvl1: "Soco paralisante",
+        lvl2: "Picada de abelha",
+        lvl3: "Avalanche manual",
+        lvl4: "Golpe cauterizador",
+        lvl5: "Murro da aflição",
+        lvl6: "Apunhalada mortal",
+    },
+    mago: {
+        lvl1: "Raio de energia",
+        lvl2: "Espinhos mágicos",
+        lvl3: "Rajada de fogo",
+        lvl4: "Trovão incandescente",
+        lvl5: "Explosão mística",
+        lvl6: "Sopro do dragão",
+    },
+}
 
-    const golpes = comportamentosPersonagens[props.tipoPersonagem].listaGolpes()
-    const golpesDisponiveis = Array.from(
-        { length: Math.min(tier, golpes.length) },
-        (_, i) => golpes[i],
+const enumGolpes = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"] as const
+
+function AtaquesSelect(props: AtaquesSelectProps) {
+    const tier = Math.min(
+        Math.max(0, 31 - Math.clz32(props.nivel)),
+        enumGolpes.length - 1,
     )
-    const labels = [
-        "Sem ataque",
-        ...golpesDisponiveis.map((golpe) => labelsAtaques[golpe]),
+    const golpesDisponiveis: (Golpe | null)[] = [
+        null,
+        ...enumGolpes.slice(0, tier),
     ]
-    const labelIdx = props.idx == null ? 0 : props.idx + 1
     return (
         <Select
-            value={labelIdx.toString()}
-            onValueChange={(e) => {
-                const labelIdx = parseInt(e)
-                props.onSelected(labelIdx === 0 ? null : labelIdx - 1)
+            value={props.golpe == null ? "_" : props.golpe}
+            onValueChange={(golpe) => {
+                props.onSelected(golpe == "_" ? null : (golpe as Golpe))
             }}
         >
             <SelectTrigger className="h-12 w-full border-slate-700 bg-slate-950">
                 <SelectValue placeholder="Selecione um ataque" />
             </SelectTrigger>
             <SelectContent>
-                {labels.map((label, idx) => {
+                {golpesDisponiveis.map((golpe) => {
+                    const label =
+                        golpe == null
+                            ? "Ataque padrão"
+                            : labelsGolpes[props.tipoPersonagem][golpe]
                     return (
-                        <SelectItem key={label} value={`${idx}`}>
+                        <SelectItem key={label} value={golpe ?? "_"}>
                             {label}
                         </SelectItem>
                     )
@@ -101,10 +108,10 @@ type Props = {
 
     jogador: Jogador
     partida: Partida
-    strikeIndex: number | null
+    golpe: Golpe | null
     potions: Record<"forca" | "sagacidade", number | undefined>
 
-    onUpdateStrike: (idx: number | null) => void
+    onUpdateGolpe: (golpe: Golpe | null) => void
 }
 
 export function BattleSection(props: Props) {
@@ -120,8 +127,8 @@ export function BattleSection(props: Props) {
                 <AtaquesSelect
                     nivel={jogador.nivel}
                     tipoPersonagem={partida.tipoPersonagem}
-                    idx={props.strikeIndex}
-                    onSelected={props.onUpdateStrike}
+                    golpe={props.golpe}
+                    onSelected={props.onUpdateGolpe}
                 />
                 <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                     <div className="space-y-3">
