@@ -66,7 +66,7 @@ export default function GameDashboard() {
             hp: 100,
             maxHp: 100,
             forca: 10,
-            inteligencia: 0,
+            sagacidade: 0,
             nivel: 1,
             fome: 0,
             xp: 0,
@@ -106,12 +106,12 @@ export default function GameDashboard() {
 
     type Efeito = {
         forca: number
-        inteligencia: number
+        sagacidade: number
         tempo: number
     }
-    const [efeitos, setEfeitos] = useState<
-        Map<"forca" | "inteligencia", Efeito>
-    >(new Map())
+    const [efeitos, setEfeitos] = useState<Map<"forca" | "sagacidade", Efeito>>(
+        new Map(),
+    )
     const hasEfeitos = efeitos.size > 0
     useEffect(() => {
         if (!hasEfeitos) return
@@ -141,7 +141,7 @@ export default function GameDashboard() {
         // Inclui efeitos ativos
         for (const [_, efeito] of efeitos.entries()) {
             draft.forca += efeito.forca
-            draft.inteligencia += efeito.inteligencia
+            draft.sagacidade += efeito.sagacidade
         }
     })
     return (
@@ -176,7 +176,7 @@ export default function GameDashboard() {
                                 const labelsPocoes: Record<TipoPocao, string> =
                                     {
                                         vida: "vida",
-                                        inteligencia: "sagacidade",
+                                        sagacidade: "sagacidade",
                                         forca: "força",
                                     }
                                 const tipoPocao = bebida.calculaTipo()
@@ -341,14 +341,14 @@ export default function GameDashboard() {
 
                                     switch (tipoPocao) {
                                         case "forca":
-                                        case "inteligencia":
+                                        case "sagacidade":
                                             setEfeitos((efeitos) =>
                                                 new Map(efeitos).set(
                                                     tipoPocao,
                                                     {
                                                         forca: atributos.forca,
-                                                        inteligencia:
-                                                            atributos.inteligencia,
+                                                        sagacidade:
+                                                            atributos.sagacidade,
                                                         tempo: 10,
                                                     },
                                                 ),
@@ -372,7 +372,7 @@ export default function GameDashboard() {
                         strikeIndex={state.idxGolpe}
                         potions={{
                             forca: efeitos.get("forca")?.tempo,
-                            inteligencia: efeitos.get("inteligencia")?.tempo,
+                            sagacidade: efeitos.get("sagacidade")?.tempo,
                         }}
                         onUpdateStrike={(idx) => {
                             setState(

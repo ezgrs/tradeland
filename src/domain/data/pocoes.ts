@@ -4,7 +4,7 @@ export type AtributosPocao = {
     preco: number
     hp: number
     forca: number
-    inteligencia: number
+    sagacidade: number
 }
 
 export const atributosPocoes: Record<TipoPocao, AtributosPocao> = {
@@ -12,18 +12,18 @@ export const atributosPocoes: Record<TipoPocao, AtributosPocao> = {
         preco: 20,
         hp: 30,
         forca: 0,
-        inteligencia: 0,
+        sagacidade: 0,
     },
-    inteligencia: {
+    sagacidade: {
         preco: 30,
         hp: 0,
         forca: 0,
-        inteligencia: 30,
+        sagacidade: 30,
     },
     forca: {
         preco: 50,
         hp: 0,
         forca: 20,
-        inteligencia: 0,
+        sagacidade: 0,
     },
 }

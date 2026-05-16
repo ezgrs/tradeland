@@ -102,7 +102,7 @@ type Props = {
     jogador: Jogador
     partida: Partida
     strikeIndex: number | null
-    potions: Record<"forca" | "inteligencia", number | undefined>
+    potions: Record<"forca" | "sagacidade", number | undefined>
 
     onUpdateStrike: (idx: number | null) => void
 }
@@ -192,13 +192,13 @@ export function BattleSection(props: Props) {
                         )}
                     </div>
                     <div className="space-y-3">
-                        {(["forca", "inteligencia"] as const).map((key) => {
+                        {(["forca", "sagacidade"] as const).map((key) => {
                             const labels: Record<
-                                "forca" | "inteligencia",
+                                "forca" | "sagacidade",
                                 string
                             > = {
                                 forca: "Força",
-                                inteligencia: "Sagacidade",
+                                sagacidade: "Sagacidade",
                             }
                             const tempo = props.potions[key]
                             if (tempo == null) return

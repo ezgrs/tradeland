@@ -8,7 +8,7 @@ export type Jogador = {
     xp: number
     nivel: number
     forca: number
-    inteligencia: number
+    sagacidade: number
     fome: number
     resistencias: Partial<Record<TipoArmadura, EstadoArmadura>>
 }

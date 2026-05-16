@@ -2,7 +2,7 @@ import { produce } from "immer"
 import { AtributosPocao, atributosPocoes } from "../data/pocoes"
 import { TipoPocao } from "./Pocao"
 
-type TipoElixir = "forca" | "vida" | "inteligencia"
+type TipoElixir = "forca" | "vida" | "sagacidade"
 
 export interface Bebida {
     calculaTipo(): TipoPocao
@@ -44,7 +44,7 @@ export class ElixirForca implements Bebida {
     }
 }
 
-export class ElixirInteligencia implements Bebida {
+export class ElixirSagacidade implements Bebida {
     constructor(private bebida: Bebida) {}
 
     calculaTipo(): TipoPocao {
@@ -52,12 +52,12 @@ export class ElixirInteligencia implements Bebida {
     }
 
     calculaTipoElixir(): TipoElixir | null {
-        return "inteligencia"
+        return "sagacidade"
     }
 
     calculaAtributos(): AtributosPocao {
         return produce(this.bebida.calculaAtributos(), (draft) => {
-            draft.inteligencia += 20
+            draft.sagacidade += 20
         })
     }
 }

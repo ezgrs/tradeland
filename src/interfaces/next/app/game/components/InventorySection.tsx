@@ -76,7 +76,7 @@ const labelsComidas: Record<TipoAlimento, string> = {
 }
 const labelsPocoes: Record<TipoPocao, string> = {
     vida: "Vida",
-    inteligencia: "Sagacidade",
+    sagacidade: "Sagacidade",
     forca: "Força",
 }
 

@@ -2,7 +2,7 @@ import { TipoAlimento } from "../entities/Alimento"
 import {
     Bebida,
     ElixirForca,
-    ElixirInteligencia,
+    ElixirSagacidade,
     ElixirVida,
     Pocao,
 } from "../entities/Bebida"
@@ -114,7 +114,7 @@ export function executaPasseio(
                     const bebida: Bebida = new Pocao(
                         probabilidade.porChaves<TipoPocao>({
                             vida: 3,
-                            inteligencia: 1,
+                            sagacidade: 1,
                             forca: 1,
                         }),
                     )
@@ -127,7 +127,7 @@ export function executaPasseio(
                             valor: (bebida) => {
                                 switch (args.tipoPersonagem) {
                                     case "mago":
-                                        return new ElixirInteligencia(bebida)
+                                        return new ElixirSagacidade(bebida)
                                     case "gladiador":
                                         return new ElixirForca(bebida)
                                     case "curandeiro":

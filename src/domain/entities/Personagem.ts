@@ -24,7 +24,7 @@ export const comportamentosPersonagens = {
                 hp: Math.min(maxHp, jogador.hp + nivel * 3),
                 maxHp: maxHp,
                 forca: jogador.forca + 10,
-                inteligencia: jogador.inteligencia + 10,
+                sagacidade: jogador.sagacidade + 10,
             }
         },
         quandoVenceBatalha(jogador: Jogador): Jogador {
@@ -60,7 +60,7 @@ export const comportamentosPersonagens = {
                 ...jogador,
                 maxHp: Math.min(jogador.maxHp + nivel * 19, nivel * 100),
                 forca: jogador.forca + nivel * 3,
-                inteligencia: jogador.inteligencia + 10,
+                sagacidade: jogador.sagacidade + 10,
             }
         },
         quandoVenceBatalha(jogador: Jogador): Jogador {
@@ -87,7 +87,7 @@ export const comportamentosPersonagens = {
         quandoEhCriado(jogador: Jogador): Jogador {
             return {
                 ...jogador,
-                inteligencia: jogador.inteligencia + 20,
+                sagacidade: jogador.sagacidade + 20,
             }
         },
         quandoSobeNivel(jogador: Jogador, nivel: number): Jogador {
@@ -95,18 +95,18 @@ export const comportamentosPersonagens = {
                 ...jogador,
                 maxHp: Math.min(jogador.maxHp + nivel * 19, nivel * 100),
                 forca: jogador.forca + 10,
-                inteligencia: jogador.inteligencia + nivel * 3,
+                sagacidade: jogador.sagacidade + nivel * 3,
             }
         },
         quandoVenceBatalha(jogador: Jogador): Jogador {
             return {
                 ...jogador,
                 forca: jogador.forca + 1,
-                inteligencia: jogador.inteligencia + 3,
+                sagacidade: jogador.sagacidade + 3,
             }
         },
         calculaDano(jogador: Jogador, dano: number): number {
-            return dano + jogador.forca + jogador.inteligencia / 10
+            return dano + jogador.forca + jogador.sagacidade / 10
         },
         listaGolpes() {
             return [

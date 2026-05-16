@@ -1,1 +1,1 @@
-export type TipoPocao = "vida" | "inteligencia" | "forca"
+export type TipoPocao = "vida" | "sagacidade" | "forca"

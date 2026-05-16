@@ -86,10 +86,10 @@ export function StatisticsSection(props: Props) {
                             <IconBrain className="h-5 w-5 text-purple-400" />{" "}
                             <div>
                                 <p className="text-[10px] text-slate-400 uppercase">
-                                    Inteligência
+                                    Sagacidade
                                 </p>
                                 <p className="text-lg font-bold">
-                                    {jogador.inteligencia}
+                                    {jogador.sagacidade}
                                 </p>
                             </div>
                         </div>
