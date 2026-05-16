@@ -285,7 +285,7 @@ export default function GameDashboard() {
                                         case "amargo":
                                             draft.logs.unshift(
                                                 createLog(
-                                                    "negativo",
+                                                    "inesperado",
                                                     "Alguém amargou isso, sua fome piorou!",
                                                 ),
                                             )
@@ -293,7 +293,7 @@ export default function GameDashboard() {
                                         case "doce":
                                             draft.logs.unshift(
                                                 createLog(
-                                                    "positivo",
+                                                    "inesperado",
                                                     "Alguém colocou algo gostoso nisso, sua fome melhorou!",
                                                 ),
                                             )
@@ -326,7 +326,7 @@ export default function GameDashboard() {
                                     if (bebida.calculaTipoElixir() != null) {
                                         draft.logs.unshift(
                                             createLog(
-                                                "positivo",
+                                                "inesperado",
                                                 "Esta poção foi tonificada e é mais potente!",
                                             ),
                                         )
