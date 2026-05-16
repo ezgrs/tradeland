@@ -21,6 +21,8 @@ import { IconBuildingStore, IconBong } from "@tabler/icons-react"
 import { RideButton } from "./components/RideButton"
 import { TipoAlimento } from "@/src/domain/entities/Alimento"
 import { produce } from "immer"
+import { Partida } from "./models/Partida"
+import { comportamentosPersonagens } from "@/src/domain/entities/Personagem"
 
 type JogadorState = {
     controller: JogadorController<Jogador>
@@ -54,22 +56,27 @@ export default function GameDashboard() {
             return
         }
         const userData = JSON.parse(stored)
+        const partida: Partida = {
+            nomePersonagem: userData["nome"],
+            tipoPersonagem: userData["classe"],
+            dificuldade: userData["dificuldade"],
+        }
+        const jogador: Jogador = {
+            hp: 100,
+            maxHp: 100,
+            forca: 10,
+            inteligencia: 0,
+            nivel: 1,
+            fome: 0,
+            xp: 0,
+            resistencias: {},
+        }
         _setState({
-            partida: {
-                nomePersonagem: userData["nome"],
-                tipoPersonagem: userData["classe"],
-                dificuldade: userData["dificuldade"],
-            },
-            jogador: {
-                hp: 100,
-                maxHp: 100,
-                forca: 10,
-                inteligencia: 0,
-                nivel: 1,
-                fome: 0,
-                xp: 0,
-                resistencias: {},
-            },
+            partida: partida,
+            jogador:
+                comportamentosPersonagens[
+                    partida.tipoPersonagem
+                ].quandoEhCriado(jogador),
             carteira: {
                 valor: 0,
             },
