@@ -1,8 +1,11 @@
 import { atributosAlimentos } from "../data/alimentos"
 import { TipoAlimento } from "./Alimento"
 
+type TipoTempero = "amargo" | "doce"
+
 export interface Comida {
     calculaTipo(): TipoAlimento
+    calculaTempero(): TipoTempero | null
     calculaFomeRestaurada(): number
 }
 
@@ -11,6 +14,10 @@ export class Alimento implements Comida {
 
     calculaTipo(): TipoAlimento {
         return this.tipo
+    }
+
+    calculaTempero(): TipoTempero | null {
+        return null
     }
 
     calculaFomeRestaurada(): number {
@@ -25,6 +32,10 @@ export class TemperoAmargo implements Comida {
         return this.comida.calculaTipo()
     }
 
+    calculaTempero(): TipoTempero | null {
+        return "amargo"
+    }
+
     calculaFomeRestaurada(): number {
         return this.comida.calculaFomeRestaurada() * -2
     }
@@ -35,6 +46,10 @@ export class TemperoDoce implements Comida {
 
     calculaTipo(): TipoAlimento {
         return this.comida.calculaTipo()
+    }
+
+    calculaTempero(): TipoTempero | null {
+        return "doce"
     }
 
     calculaFomeRestaurada(): number {
