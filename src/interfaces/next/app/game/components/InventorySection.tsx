@@ -1,4 +1,4 @@
-import { IconToolsKitchen2, IconMug } from "@tabler/icons-react"
+import { IconToolsKitchen2, IconMug, IconInfoCircle } from "@tabler/icons-react"
 import { Button } from "../../../components/ui/button"
 import { Card, CardHeader, CardTitle } from "../../../components/ui/card"
 import {
@@ -20,6 +20,7 @@ import {
     TooltipTrigger,
     TooltipContent,
 } from "../../../components/ui/tooltip"
+import { atributosAlimentos } from "@/src/domain/data/alimentos"
 
 const labelsEspolios: Record<Espolio["id"], string> = {
     escamaDragao: "Escama de dragão",
@@ -168,31 +169,46 @@ export function InventorySection(props: Props) {
                                 <TableCell className="px-0">
                                     {dadosComida != null && (
                                         <div className="flex items-center gap-4">
-                                            <span className="font-medium text-slate-400">
-                                                {dadosComida.valores.length == 1
-                                                    ? labelsComidas[
-                                                          dadosComida.tipo
-                                                      ]
-                                                    : `${
-                                                          labelsComidas[
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium text-slate-400">
+                                                    {dadosComida.valores
+                                                        .length == 1
+                                                        ? labelsComidas[
                                                               dadosComida.tipo
                                                           ]
-                                                      } (x${dadosComida.valores.length})`}
-                                            </span>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="h-7 border-slate-700 bg-slate-950 px-2 text-[10px] uppercase hover:bg-orange-950 hover:text-orange-400"
-                                                    >
-                                                        <IconToolsKitchen2 className="h-4 w-4" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    Comer
-                                                </TooltipContent>
-                                            </Tooltip>
+                                                        : `${
+                                                              labelsComidas[
+                                                                  dadosComida
+                                                                      .tipo
+                                                              ]
+                                                          } (x${dadosComida.valores.length})`}
+                                                </span>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <IconInfoCircle
+                                                            className="h-4"
+                                                            size="sm"
+                                                        />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        Recupera{" "}
+                                                        {
+                                                            atributosAlimentos[
+                                                                dadosComida.tipo
+                                                            ].fome
+                                                        }{" "}
+                                                        pontos de fome.
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </div>
+
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-7 border-slate-700 bg-slate-950 px-2 text-[10px] uppercase hover:bg-orange-950 hover:text-orange-400"
+                                            >
+                                                <IconToolsKitchen2 className="h-4 w-4" />
+                                            </Button>
                                         </div>
                                     )}
                                 </TableCell>
