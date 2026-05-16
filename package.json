@@ -16,6 +16,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack src/interfaces/next",
+    "shadcn:add": "npx shadcn@latest add --path src/interfaces/next/components/ui",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
