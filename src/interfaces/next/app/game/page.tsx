@@ -154,19 +154,19 @@ export default function GameDashboard() {
                                     TipoInimigo,
                                     string
                                 > = {
-                                    dragao: "dragão",
-                                    trasgo: "trasgo",
-                                    ogro: "ogro",
-                                    gigante: "gigante",
-                                    bruxa: "bruxa",
-                                    vampiro: "vampiro",
+                                    dragao: "um dragão",
+                                    trasgo: "um trasgo",
+                                    ogro: "um ogro",
+                                    gigante: "um gigante",
+                                    bruxa: "uma bruxa",
+                                    vampiro: "um vampiro",
                                 }
                                 setState((state) => ({
                                     ...state,
                                     logs: [
                                         createLog(
                                             "neutro",
-                                            `Você encontrou um ${labelsInimigos[tipoInimigo]}, prepare-se!`,
+                                            `Você encontrou ${labelsInimigos[tipoInimigo]}, prepare-se!`,
                                         ),
                                         ...state.logs,
                                     ],
