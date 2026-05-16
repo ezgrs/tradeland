@@ -32,7 +32,7 @@ type JogadorState = {
 
 export default function GameDashboard() {
     const router = useRouter()
-    const [state, _setState] = useState<State | null>(null)
+    const [_state, _setState] = useState<State | null>(null)
 
     function setState(action: (state: State) => State): void {
         _setState((state) => {
@@ -135,15 +135,16 @@ export default function GameDashboard() {
         return () => clearInterval(id)
     }, [hasEfeitos])
 
-    if (!state) return null
-    const { partida, carteira, mochila } = state
-    const jogador = produce(state.jogador, (draft) => {
+    const state = produce(_state, draft => {
+        if (draft == null) return
         // Inclui efeitos ativos
         for (const [_, efeito] of efeitos.entries()) {
-            draft.forca += efeito.forca
-            draft.sagacidade += efeito.sagacidade
+            draft.jogador.forca += efeito.forca
+            draft.jogador.sagacidade += efeito.sagacidade
         }
     })
+    if (!state) return null
+    const { jogador, partida, carteira, mochila } = state
     return (
         <main className="min-h-screen w-full bg-slate-950 p-4 text-slate-50 md:p-8">
             <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-12">
