@@ -173,7 +173,7 @@ export default function GameDashboard() {
                 </div>
 
                 <div className="space-y-6 lg:col-span-6">
-                    <InventorySection mochila={mochila} />
+                    <InventorySection title="Inventário" mochila={mochila} />
                     <BattleSection
                         title="Batalha"
                         jogador={jogador}

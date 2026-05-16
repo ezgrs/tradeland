@@ -75,6 +75,8 @@ const labelsPocoes: Record<TipoPocao, string> = {
 }
 
 type Props = {
+    title: string
+
     mochila: Mochila
 }
 
@@ -127,7 +129,7 @@ export function InventorySection(props: Props) {
         <Card className="overflow-hidden border-slate-800 bg-slate-900">
             <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 px-6 py-1">
                 <CardTitle className="text-sm font-medium tracking-wider text-slate-400 uppercase">
-                    Inventário
+                    {props.title}
                 </CardTitle>
             </CardHeader>
             <Table>
