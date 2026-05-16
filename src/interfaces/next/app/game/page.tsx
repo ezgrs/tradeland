@@ -15,6 +15,7 @@ import { createLog } from "./models/Log"
 import { InventorySection } from "./components/InventorySection"
 import { StatisticsSection } from "./components/StatisticsSection"
 import { BattleSection } from "./components/BattleSection"
+import { TipoInimigo } from "@/src/domain/entities/Inimigo"
 
 type JogadorState = {
     controller: JogadorController<Jogador>
@@ -144,7 +145,16 @@ export default function GameDashboard() {
                                 }
                             })
                         }}
-                        onFindEnemy={(_) => {
+                        onFindEnemy={(tipoInimigo) => {
+                            const labelsInimigos: Record<TipoInimigo, string> =
+                                {
+                                    dragao: "dragão",
+                                    trasgo: "trasgo",
+                                    ogro: "ogro",
+                                    gigante: "gigante",
+                                    bruxa: "bruxa",
+                                    vampiro: "vampiro",
+                                }
                             setState((state) => {
                                 if (state == null) return null
                                 return {
@@ -152,7 +162,7 @@ export default function GameDashboard() {
                                     logs: [
                                         createLog(
                                             "neutro",
-                                            `Você encontrou um inimigo, prepare-se!`,
+                                            `Você encontrou um ${labelsInimigos[tipoInimigo]}, prepare-se!`,
                                         ),
                                         ...state.logs,
                                     ],
