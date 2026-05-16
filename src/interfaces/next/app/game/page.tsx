@@ -91,13 +91,14 @@ export default function GameDashboard() {
     }, [router])
     useEffect(() => {
         const id = setInterval(() => {
-            setState((state) => ({
-                ...state,
-                jogador: jogadorRef.current.controller.alteraFome(
-                    state.jogador,
-                    5,
-                ),
-            }))
+            setState(
+                produce((draft) => {
+                    draft.jogador = jogadorRef.current.controller.alteraFome(
+                        draft.jogador,
+                        5,
+                    )
+                }),
+            )
         }, 60_000)
         return () => clearInterval(id)
     }, [])
@@ -119,32 +120,29 @@ export default function GameDashboard() {
                             jogador={jogador}
                             listener={jogadorRef.current.listener}
                             onFindMoney={(qtd) => {
-                                setState((state) => ({
-                                    ...state,
-                                    logs: [
-                                        createLog(
-                                            "positivo",
-                                            `Você encontrou ${qtd} moedas!`,
-                                        ),
-                                        ...state.logs,
-                                    ],
-                                    carteira: {
-                                        ...state.carteira,
-                                        valor: state.carteira.valor + qtd,
-                                    },
-                                }))
+                                setState(
+                                    produce((draft) => {
+                                        draft.logs.unshift(
+                                            createLog(
+                                                "positivo",
+                                                `Você encontrou ${qtd} moedas!`,
+                                            ),
+                                        )
+                                        draft.carteira.valor += qtd
+                                    }),
+                                )
                             }}
                             onFindDrink={(_) => {
-                                setState((state) => ({
-                                    ...state,
-                                    logs: [
-                                        createLog(
-                                            "positivo",
-                                            `Você encontrou uma bebida!`,
-                                        ),
-                                        ...state.logs,
-                                    ],
-                                }))
+                                setState(
+                                    produce((draft) => {
+                                        draft.logs.unshift(
+                                            createLog(
+                                                "positivo",
+                                                `Você encontrou uma bebida!`,
+                                            ),
+                                        )
+                                    }),
+                                )
                             }}
                             onFindFood={(comida) => {
                                 const labelsAlimentos: Record<
@@ -159,28 +157,20 @@ export default function GameDashboard() {
                                     frango: "um frango",
                                 }
                                 const tipoAlimento = comida.calculaTipo()
-                                setState((state) => ({
-                                    ...state,
-                                    logs: [
-                                        createLog(
-                                            "positivo",
-                                            `Você encontrou ${labelsAlimentos[comida.calculaTipo()]}!`,
-                                        ),
-                                        ...state.logs,
-                                    ],
-                                    mochila: {
-                                        ...state.mochila,
-                                        comidas: {
-                                            ...state.mochila.comidas,
-                                            [tipoAlimento]: [
-                                                ...(state.mochila.comidas[
-                                                    tipoAlimento
-                                                ] ?? []),
-                                                comida,
-                                            ],
-                                        },
-                                    },
-                                }))
+                                setState(
+                                    produce((draft) => {
+                                        draft.logs.unshift(
+                                            createLog(
+                                                "positivo",
+                                                `Você encontrou ${labelsAlimentos[comida.calculaTipo()]}!`,
+                                            ),
+                                        )
+                                        const comidas = (state.mochila.comidas[
+                                            tipoAlimento
+                                        ] ??= [])
+                                        comidas.push(comida)
+                                    }),
+                                )
                             }}
                             onFindEnemy={(tipoInimigo) => {
                                 const labelsInimigos: Record<
@@ -194,16 +184,16 @@ export default function GameDashboard() {
                                     bruxa: "uma bruxa",
                                     vampiro: "um vampiro",
                                 }
-                                setState((state) => ({
-                                    ...state,
-                                    logs: [
-                                        createLog(
-                                            "neutro",
-                                            `Você encontrou ${labelsInimigos[tipoInimigo]}, prepare-se!`,
-                                        ),
-                                        ...state.logs,
-                                    ],
-                                }))
+                                setState(
+                                    produce((draft) => {
+                                        draft.logs.unshift(
+                                            createLog(
+                                                "neutro",
+                                                `Você encontrou ${labelsInimigos[tipoInimigo]}, prepare-se!`,
+                                            ),
+                                        )
+                                    }),
+                                )
                             }}
                         />
                         <Button variant="secondary" className="gap-2">
@@ -218,7 +208,11 @@ export default function GameDashboard() {
                         title="Logs de Registro"
                         logs={state.logs}
                         onClearLogs={() =>
-                            setState((state) => ({ ...state, logs: [] }))
+                            setState(
+                                produce((draft) => {
+                                    draft.logs = []
+                                }),
+                            )
                         }
                     />
                 </div>
@@ -277,7 +271,11 @@ export default function GameDashboard() {
                         partida={partida}
                         strikeIndex={state.idxGolpe}
                         onUpdateStrike={(idx) => {
-                            setState((state) => ({ ...state, idxGolpe: idx }))
+                            setState(
+                                produce((draft) => {
+                                    draft.idxGolpe = idx
+                                }),
+                            )
                         }}
                     />
                 </div>
