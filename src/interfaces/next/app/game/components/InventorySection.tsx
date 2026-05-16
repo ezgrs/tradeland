@@ -84,6 +84,8 @@ type Props = {
     title: string
 
     mochila: Mochila
+
+    onEat: (food: TipoAlimento) => void
 }
 
 type RowValue<K, V> = { tipo: K; valores: V[] } | null
@@ -206,6 +208,11 @@ export function InventorySection(props: Props) {
                                                 variant="outline"
                                                 size="sm"
                                                 className="h-7 border-slate-700 bg-slate-950 px-2 text-[10px] uppercase hover:bg-orange-950 hover:text-orange-400"
+                                                onClick={(_) =>
+                                                    props.onEat(
+                                                        dadosComida.tipo,
+                                                    )
+                                                }
                                             >
                                                 <IconToolsKitchen2 className="h-4 w-4" />
                                             </Button>

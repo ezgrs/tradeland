@@ -20,6 +20,7 @@ import { Button } from "../../components/ui/button"
 import { IconBuildingStore, IconBong } from "@tabler/icons-react"
 import { RideButton } from "./components/RideButton"
 import { TipoAlimento } from "@/src/domain/entities/Alimento"
+import { produce } from "immer"
 
 type JogadorState = {
     controller: JogadorController<Jogador>
@@ -216,7 +217,53 @@ export default function GameDashboard() {
                 </div>
 
                 <div className="space-y-6 lg:col-span-6">
-                    <InventorySection title="Inventário" mochila={mochila} />
+                    <InventorySection
+                        title="Inventário"
+                        mochila={mochila}
+                        onEat={(tipoAlimento) => {
+                            setState(
+                                produce((draft) => {
+                                    const comidas =
+                                        draft.mochila.comidas[tipoAlimento] ??
+                                        []
+                                    const comida = comidas.shift()
+                                    if (comida == null) return
+
+                                    switch (comida.calculaTempero()) {
+                                        case "amargo":
+                                            draft.logs.unshift(
+                                                createLog(
+                                                    "negativo",
+                                                    "Alguém colocou algo amargo nisso, sua fome aumentou!",
+                                                ),
+                                            )
+                                            break
+                                        case "doce":
+                                            draft.logs.unshift(
+                                                createLog(
+                                                    "positivo",
+                                                    "Alguém colocou algo gostoso nisso, sua fome diminuiu!",
+                                                ),
+                                            )
+                                            break
+                                    }
+                                    draft.jogador =
+                                        jogadorRef.current.listener.come(
+                                            jogador,
+                                            comida,
+                                        )
+                                    if (comidas.length === 0) {
+                                        delete draft.mochila.comidas[
+                                            tipoAlimento
+                                        ]
+                                    } else {
+                                        draft.mochila.comidas[tipoAlimento] =
+                                            comidas
+                                    }
+                                }),
+                            )
+                        }}
+                    />
                     <BattleSection
                         title="Batalha"
                         jogador={jogador}
