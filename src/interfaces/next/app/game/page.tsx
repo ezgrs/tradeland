@@ -24,7 +24,15 @@ type JogadorState = {
 
 export default function GameDashboard() {
     const router = useRouter()
-    const [state, setState] = useState<State | null>(null)
+    const [state, _setState] = useState<State | null>(null)
+
+    function setState(action: (state: State) => State): void {
+        _setState((state) => {
+            if (state == null) return null
+            return action(state)
+        })
+    }
+
     const jogadorRef = useRef<JogadorState>(
         (() => {
             const controller = new DefaultJogadorController()
@@ -41,7 +49,7 @@ export default function GameDashboard() {
             return
         }
         const userData = JSON.parse(stored)
-        setState({
+        _setState({
             partida: {
                 nomePersonagem: userData["nome"],
                 tipoPersonagem: userData["classe"],
@@ -71,16 +79,13 @@ export default function GameDashboard() {
     }, [router])
     useEffect(() => {
         const id = setInterval(() => {
-            setState((state) => {
-                if (state == null) return null
-                return {
-                    ...state,
-                    jogador: jogadorRef.current.controller.alteraFome(
-                        state.jogador,
-                        5,
-                    ),
-                }
-            })
+            setState((state) => ({
+                ...state,
+                jogador: jogadorRef.current.controller.alteraFome(
+                    state.jogador,
+                    5,
+                ),
+            }))
         }, 60_000)
         return () => clearInterval(id)
     }, [])
@@ -97,53 +102,44 @@ export default function GameDashboard() {
                         carteira={carteira}
                         listener={jogadorRef.current.listener}
                         onFindMoney={(qtd) => {
-                            setState((state) => {
-                                if (state == null) return null
-                                return {
-                                    ...state,
-                                    logs: [
-                                        createLog(
-                                            "positivo",
-                                            `Você encontrou ${qtd} moedas!`,
-                                        ),
-                                        ...state.logs,
-                                    ],
-                                    carteira: {
-                                        ...state.carteira,
-                                        valor: state.carteira.valor + qtd,
-                                    },
-                                }
-                            })
+                            setState((state) => ({
+                                ...state,
+                                logs: [
+                                    createLog(
+                                        "positivo",
+                                        `Você encontrou ${qtd} moedas!`,
+                                    ),
+                                    ...state.logs,
+                                ],
+                                carteira: {
+                                    ...state.carteira,
+                                    valor: state.carteira.valor + qtd,
+                                },
+                            }))
                         }}
                         onFindDrink={(_) => {
-                            setState((state) => {
-                                if (state == null) return null
-                                return {
-                                    ...state,
-                                    logs: [
-                                        createLog(
-                                            "positivo",
-                                            `Você encontrou uma bebida!`,
-                                        ),
-                                        ...state.logs,
-                                    ],
-                                }
-                            })
+                            setState((state) => ({
+                                ...state,
+                                logs: [
+                                    createLog(
+                                        "positivo",
+                                        `Você encontrou uma bebida!`,
+                                    ),
+                                    ...state.logs,
+                                ],
+                            }))
                         }}
                         onFindFood={(_) => {
-                            setState((state) => {
-                                if (state == null) return null
-                                return {
-                                    ...state,
-                                    logs: [
-                                        createLog(
-                                            "positivo",
-                                            `Você encontrou uma comida!`,
-                                        ),
-                                        ...state.logs,
-                                    ],
-                                }
-                            })
+                            setState((state) => ({
+                                ...state,
+                                logs: [
+                                    createLog(
+                                        "positivo",
+                                        `Você encontrou uma comida!`,
+                                    ),
+                                    ...state.logs,
+                                ],
+                            }))
                         }}
                         onFindEnemy={(tipoInimigo) => {
                             const labelsInimigos: Record<TipoInimigo, string> =
@@ -155,30 +151,24 @@ export default function GameDashboard() {
                                     bruxa: "bruxa",
                                     vampiro: "vampiro",
                                 }
-                            setState((state) => {
-                                if (state == null) return null
-                                return {
-                                    ...state,
-                                    logs: [
-                                        createLog(
-                                            "neutro",
-                                            `Você encontrou um ${labelsInimigos[tipoInimigo]}, prepare-se!`,
-                                        ),
-                                        ...state.logs,
-                                    ],
-                                }
-                            })
+                            setState((state) => ({
+                                ...state,
+                                logs: [
+                                    createLog(
+                                        "neutro",
+                                        `Você encontrou um ${labelsInimigos[tipoInimigo]}, prepare-se!`,
+                                    ),
+                                    ...state.logs,
+                                ],
+                            }))
                         }}
                     />
                     <LogsSection
                         title="Logs de Registro"
                         logs={state.logs}
-                        onClearLogs={() => {
-                            setState((state) => {
-                                if (state == null) return null
-                                return { ...state, logs: [] }
-                            })
-                        }}
+                        onClearLogs={() =>
+                            setState((state) => ({ ...state, logs: [] }))
+                        }
                     />
                 </div>
 
@@ -190,10 +180,7 @@ export default function GameDashboard() {
                         partida={partida}
                         strikeIndex={state.idxGolpe}
                         onUpdateStrike={(idx) => {
-                            setState((state) => {
-                                if (state == null) return null
-                                return { ...state, idxGolpe: idx }
-                            })
+                            setState((state) => ({ ...state, idxGolpe: idx }))
                         }}
                     />
                 </div>
