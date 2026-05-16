@@ -25,10 +25,6 @@ type TravelArgs = {
     signal: AbortSignal
 }
 
-type DadosPasseio = {
-    controller: AbortController
-}
-
 async function travel(args: TravelArgs): Promise<void> {
     const { traveler, listener } = args
     type Event =
@@ -105,13 +101,13 @@ type Props = {
 }
 
 export function RideButton(props: Props) {
-    const passeioRef = useRef<DadosPasseio | null>(null)
+    const passeioRef = useRef<AbortController | null>(null)
     const [ehPasseio, setEhPasseio] = useState<boolean>(false)
     if (ehPasseio) {
         return (
             <Button
                 onClick={async (_) => {
-                    passeioRef.current?.controller.abort()
+                    passeioRef.current?.abort()
                     passeioRef.current = null
                     setEhPasseio(false)
                 }}
@@ -132,7 +128,7 @@ export function RideButton(props: Props) {
                     traveler: props.traveler,
                     listener: props.listener,
                 })
-                passeioRef.current = { controller }
+                passeioRef.current = controller
                 setEhPasseio(true)
             }}
             variant="secondary"
