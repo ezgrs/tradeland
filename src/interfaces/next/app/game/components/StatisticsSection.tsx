@@ -100,7 +100,7 @@ export function StatisticsSection(props: Props) {
                                     Carteira
                                 </p>
                                 <p className="text-lg font-bold">
-                                    TL${carteira.valor}
+                                    ${carteira.valor}
                                 </p>
                             </div>
                         </div>
