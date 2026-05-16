@@ -15,6 +15,11 @@ import { Espolio } from "@/src/domain/entities/Espolio"
 import { Mochila } from "@/src/domain/entities/Mochila"
 import { Comida } from "@/src/domain/entities/Comida"
 import { Bebida } from "@/src/domain/entities/Bebida"
+import {
+    Tooltip,
+    TooltipTrigger,
+    TooltipContent,
+} from "../../../components/ui/tooltip"
 
 const labelsEspolios: Record<Espolio["id"], string> = {
     escamaDragao: "Escama de dragão",
@@ -174,13 +179,20 @@ export function InventorySection(props: Props) {
                                                           ]
                                                       } (x${dadosComida.valores.length})`}
                                             </span>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-7 border-slate-700 bg-slate-950 px-2 text-[10px] uppercase hover:bg-orange-950 hover:text-orange-400"
-                                            >
-                                                <IconToolsKitchen2 className="h-4 w-4" />
-                                            </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-7 border-slate-700 bg-slate-950 px-2 text-[10px] uppercase hover:bg-orange-950 hover:text-orange-400"
+                                                    >
+                                                        <IconToolsKitchen2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    Comer
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
                                     )}
                                 </TableCell>
