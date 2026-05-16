@@ -351,7 +351,7 @@ export default function GameDashboard() {
                                                     )
                                                     break
                                             }
-                                            await delay(1000)
+                                            await delay(5000)
                                             break
                                         case "inimigo":
                                             break
@@ -365,13 +365,21 @@ export default function GameDashboard() {
                                     await delay(5000)
                                 },
                                 async onBattleFinished(
-                                    _: FinalBatalha,
+                                    result: FinalBatalha,
                                 ): Promise<void> {
                                     setState(
                                         produce((draft) => {
                                             draft.inimigo = null
+                                            switch (result.type) {
+                                                case "vitoria":
+                                                    if (result.espolio != null) {
+                                                        const espolios = draft.mochila.espolios[result.espolio.id] ??= []
+                                                        espolios.push(result.espolio)
+                                                    }
+                                            }
                                         }),
                                     )
+                                    await delay(2000)
                                 },
                             }}
                         />

@@ -16,7 +16,7 @@ export interface Traveler {
 interface TravelListener {
     onSomethingFound(): Promise<AchadoPasseio>
     onEnemyFound(enemy: Inimigo): Promise<void>
-    onBattleFinished(reason: FinalBatalha): Promise<void>
+    onBattleFinished(result: FinalBatalha): Promise<void>
 }
 
 type TravelArgs = {
@@ -64,7 +64,7 @@ async function travel(args: TravelArgs): Promise<void> {
                 const appliedDamage = await traveler.produceDamage(enemy)
                 const newEnemyHp = enemy.hp - appliedDamage
                 if (newEnemyHp <= 0) {
-                    await listener.onBattleFinished("vitoria")
+                    await listener.onBattleFinished({type: "vitoria", espolio: currentEvent.reward})
                     currentEvent = { action: "walking" }
                     break
                 }
@@ -74,7 +74,7 @@ async function travel(args: TravelArgs): Promise<void> {
                     await traveler.consumeDamage(receivedDamage)
                 } catch (e) {
                     if (e instanceof JogadorMorreu) {
-                        await listener.onBattleFinished("morte")
+                        await listener.onBattleFinished({type: "morte"})
                         return
                     }
                     throw e
@@ -88,7 +88,7 @@ async function travel(args: TravelArgs): Promise<void> {
         }
     }
     if (currentEvent?.action == "fighting") {
-        await listener.onBattleFinished("fuga")
+        await listener.onBattleFinished({type: "fuga"})
     }
 }
 
