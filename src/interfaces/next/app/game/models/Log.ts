@@ -1,4 +1,4 @@
-type TipoLog = "positivo" | "negativo" | "neutro"
+type TipoLog = "positivo" | "negativo" | "neutro" | "inesperado"
 
 export type Log = {
     id: string

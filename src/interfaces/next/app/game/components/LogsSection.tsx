@@ -44,6 +44,9 @@ export function LogsSection(props: Props) {
                         case "positivo":
                             attrs.push("font-bold", "text-green-400")
                             break
+                        case "inesperado":
+                            attrs.push("text-orange-400")
+                            break
                     }
                     return (
                         <p key={log.id} className={cn(...attrs)}>
