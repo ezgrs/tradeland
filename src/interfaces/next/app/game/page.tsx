@@ -23,6 +23,7 @@ import { TipoAlimento } from "@/src/domain/entities/Alimento"
 import { produce } from "immer"
 import { Partida } from "./models/Partida"
 import { comportamentosPersonagens } from "@/src/domain/entities/Personagem"
+import { TipoPocao } from "@/src/domain/entities/Pocao"
 
 type JogadorState = {
     controller: JogadorController<Jogador>
@@ -132,15 +133,26 @@ export default function GameDashboard() {
                                     }),
                                 )
                             }}
-                            onFindDrink={(_) => {
+                            onFindDrink={(bebida) => {
+                                const labelsPocoes: Record<TipoPocao, string> =
+                                    {
+                                        vida: "vida",
+                                        sagacidade: "sagacidade",
+                                        forca: "força",
+                                    }
+                                const tipoPocao = bebida.calculaTipo()
                                 setState(
                                     produce((draft) => {
                                         draft.logs.unshift(
                                             createLog(
                                                 "positivo",
-                                                `Você encontrou uma bebida!`,
+                                                `Você encontrou uma poção de ${labelsPocoes[tipoPocao]}!`,
                                             ),
                                         )
+                                        const bebidas = (draft.mochila.bebidas[
+                                            tipoPocao
+                                        ] ??= [])
+                                        bebidas.push(bebida)
                                     }),
                                 )
                             }}
