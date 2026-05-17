@@ -37,6 +37,7 @@ export default function GameDashboard() {
     const [comidas, addComida, popComida] = useSacola<TipoAlimento, Comida>()
     const [bebidas, addBebida, popBebida] = useSacola<TipoPocao, Bebida>()
     const [golpe, setGolpe] = useState<Golpe | null>(null)
+    const [inimigo, setInimigo] = useState<Inimigo | null>(null)
 
     const tier = Math.min(31 - Math.clz32(jogador.nivel), 6)
     useEffect(() => {
@@ -91,11 +92,7 @@ export default function GameDashboard() {
             "neutro",
             `Você encontrou ${labelsInimigos[inimigo.tipo]}, prepare-se!`,
         )
-        setEstado(
-            produce((draft) => {
-                draft.inimigo = inimigo
-            }),
-        )
+        setInimigo(inimigo)
     }
 
     function onAtacaInimigo(inimigo: Inimigo, dano: number) {
@@ -112,14 +109,10 @@ export default function GameDashboard() {
             "neutro",
             `Você causou ${dano} pontos de dano ${labelsInimigos[inimigo.tipo]}.`,
         )
-        setEstado(
-            produce((draft) => {
-                const novoHpInimigo = inimigo.hp - dano
-                if (novoHpInimigo > 0) {
-                    draft.inimigo = { ...inimigo, hp: novoHpInimigo }
-                }
-            }),
-        )
+        const novoHpInimigo = inimigo.hp - dano
+        if (novoHpInimigo > 0) {
+            setInimigo({ ...inimigo, hp: novoHpInimigo })
+        }
     }
 
     return (
@@ -217,10 +210,9 @@ export default function GameDashboard() {
                                 async onBattleFinished(
                                     result: FinalBatalha,
                                 ): Promise<void> {
+                                    setInimigo(null)
                                     setEstado(
                                         produce((draft) => {
-                                            draft.inimigo = null
-
                                             let jogador = draft.jogador
                                             jogador =
                                                 partida.personagem.classe.evoluiBatalha(
@@ -334,7 +326,7 @@ export default function GameDashboard() {
                         jogador={jogador}
                         partida={partida}
                         golpe={golpe}
-                        inimigo={estado.inimigo}
+                        inimigo={inimigo}
                         potions={{
                             forca: efeitos.get("forca")?.tempo,
                             sagacidade: efeitos.get("sagacidade")?.tempo,
