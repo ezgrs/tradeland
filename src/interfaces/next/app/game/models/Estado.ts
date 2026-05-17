@@ -1,7 +1,4 @@
-import { Carteira } from "@/src/domain/entities/Carteira"
 import { Jogador } from "@/src/domain/entities/Jogador"
-import { Mochila } from "@/src/domain/entities/Mochila"
-import { Log } from "./Log"
 import { Partida } from "./Partida"
 import { Golpe } from "@/src/domain/entities/Golpe"
 import { Inimigo } from "@/src/domain/entities/Inimigo"
@@ -9,7 +6,6 @@ import { Inimigo } from "@/src/domain/entities/Inimigo"
 export type Estado = {
     partida: Partida
     jogador: Jogador
-    mochila: Mochila
     golpe: Golpe | null
     inimigo: Inimigo | null
 }

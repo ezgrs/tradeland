@@ -12,7 +12,6 @@ import {
 import { TipoPocao } from "@/src/domain/entities/Pocao"
 import { TipoAlimento } from "@/src/domain/entities/Alimento"
 import { Espolio } from "@/src/domain/entities/Espolio"
-import { Mochila } from "@/src/domain/entities/Mochila"
 import { Comida } from "@/src/domain/entities/Comida"
 import { Bebida } from "@/src/domain/entities/Bebida"
 import {
@@ -83,7 +82,9 @@ const labelsPocoes: Record<TipoPocao, string> = {
 type Props = {
     title: string
 
-    mochila: Mochila
+    espolios: Record<Espolio["id"], Espolio[]>
+    comidas: Record<TipoAlimento, Comida[]>
+    bebidas: Record<TipoPocao, Bebida[]>
 
     onEat: (food: TipoAlimento) => void
     onDrink: (drink: TipoPocao) => void
@@ -98,9 +99,9 @@ type Row = {
 }
 
 export function InventorySection(props: Props) {
-    const itensEspolios = [...Object.entries(props.mochila.espolios)]
-    const itensComidas = [...Object.entries(props.mochila.comidas)]
-    const itensBebidas = [...Object.entries(props.mochila.bebidas)]
+    const itensEspolios = [...Object.entries(props.espolios)]
+    const itensComidas = [...Object.entries(props.comidas)]
+    const itensBebidas = [...Object.entries(props.bebidas)]
     const rowCount = Math.max(
         itensEspolios.length,
         itensComidas.length,

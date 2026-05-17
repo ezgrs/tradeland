@@ -22,15 +22,20 @@ import { useEstado } from "./hooks/estado"
 import { useEffect } from "react"
 import { useLogs } from "./hooks/logs"
 import { useCarteira } from "./hooks/carteira"
+import { useSacola } from "./hooks/sacola"
+import { Espolio } from "@/src/domain/entities/Espolio"
 
 export default function GameDashboard() {
     const hook = useEstado()
     if (!hook) return null
 
     const [estado, setEstado, efeitos, addEfeito] = hook
-    const { jogador, partida, mochila } = estado
+    const { jogador, partida } = estado
     const [moedas, depositCoins] = useCarteira()
     const [logs, addLog, clearLogs] = useLogs()
+    const [espolios, addEspolio, _] = useSacola<Espolio["id"], Espolio>()
+    const [comidas, addComida, popComida] = useSacola<TipoAlimento, Comida>()
+    const [bebidas, addBebida, popBebida] = useSacola<TipoPocao, Bebida>()
 
     const tier = Math.min(31 - Math.clz32(jogador.nivel), 6)
     useEffect(() => {
@@ -54,16 +59,8 @@ export default function GameDashboard() {
             frango: "um frango",
         }
         const tipoAlimento = comida.calculaTipo()
-        addLog(
-            "positivo",
-            `Você encontrou ${labelsAlimentos[comida.calculaTipo()]}!`,
-        )
-        setEstado(
-            produce((draft) => {
-                const comidas = (draft.mochila.comidas[tipoAlimento] ??= [])
-                comidas.push(comida)
-            }),
-        )
+        addLog("positivo", `Você encontrou ${labelsAlimentos[tipoAlimento]}!`)
+        addComida(tipoAlimento, comida)
     }
 
     function onEncontraBebida(bebida: Bebida) {
@@ -77,12 +74,7 @@ export default function GameDashboard() {
             "positivo",
             `Você encontrou uma poção de ${labelsPocoes[tipoPocao]}!`,
         )
-        setEstado(
-            produce((draft) => {
-                const bebidas = (draft.mochila.bebidas[tipoPocao] ??= [])
-                bebidas.push(bebida)
-            }),
-        )
+        addBebida(tipoPocao, bebida)
     }
 
     function onEncontraInimigo(inimigo: Inimigo) {
@@ -245,11 +237,8 @@ export default function GameDashboard() {
                                                     if (
                                                         result.espolio != null
                                                     ) {
-                                                        const espolios =
-                                                            (draft.mochila.espolios[
-                                                                result.espolio.id
-                                                            ] ??= [])
-                                                        espolios.push(
+                                                        addEspolio(
+                                                            result.espolio.id,
                                                             result.espolio,
                                                         )
                                                     }
@@ -281,87 +270,62 @@ export default function GameDashboard() {
                 <div className="space-y-6 lg:col-span-6">
                     <InventorySection
                         title="Inventário"
-                        mochila={mochila}
+                        espolios={espolios}
+                        comidas={comidas}
+                        bebidas={bebidas}
                         onEat={(tipoAlimento) => {
+                            const comida = popComida(tipoAlimento)
+                            switch (comida.calculaTempero()) {
+                                case "amargo":
+                                    addLog(
+                                        "inesperado",
+                                        "Alguém amargou isso, sua fome piorou!",
+                                    )
+                                    break
+                                case "doce":
+                                    addLog(
+                                        "inesperado",
+                                        "Alguém colocou algo gostoso nisso, sua fome melhorou!",
+                                    )
+                                    break
+                            }
                             setEstado(
                                 produce((draft) => {
-                                    const comidas =
-                                        draft.mochila.comidas[tipoAlimento] ??
-                                        []
-                                    const comida = comidas.shift()
-                                    if (comida == null) return
-
-                                    switch (comida.calculaTempero()) {
-                                        case "amargo":
-                                            addLog(
-                                                "inesperado",
-                                                "Alguém amargou isso, sua fome piorou!",
-                                            )
-                                            break
-                                        case "doce":
-                                            addLog(
-                                                "inesperado",
-                                                "Alguém colocou algo gostoso nisso, sua fome melhorou!",
-                                            )
-                                            break
-                                    }
                                     draft.jogador =
                                         partida.personagem.diminuiFome(
                                             jogador,
                                             comida.calculaFomeRestaurada(),
                                         )
-                                    if (comidas.length === 0) {
-                                        delete draft.mochila.comidas[
-                                            tipoAlimento
-                                        ]
-                                    } else {
-                                        draft.mochila.comidas[tipoAlimento] =
-                                            comidas
-                                    }
                                 }),
                             )
                         }}
                         onDrink={(tipoPocao) => {
+                            const bebida = popBebida(tipoPocao)
+                            if (bebida.calculaTipoElixir() != null) {
+                                addLog(
+                                    "inesperado",
+                                    "Esta poção foi tonificada e é mais potente!",
+                                )
+                            }
+                            const atributos = bebida.calculaAtributos()
                             setEstado(
                                 produce((draft) => {
-                                    const bebidas =
-                                        draft.mochila.bebidas[tipoPocao] ?? []
-                                    const bebida = bebidas.shift()
-                                    if (bebida == null) return
-
-                                    if (bebida.calculaTipoElixir() != null) {
-                                        addLog(
-                                            "inesperado",
-                                            "Esta poção foi tonificada e é mais potente!",
-                                        )
-                                    }
-
-                                    const atributos = bebida.calculaAtributos()
                                     draft.jogador =
                                         partida.personagem.aumentaHp(
                                             draft.jogador,
                                             atributos.hp,
                                         )
-
-                                    switch (tipoPocao) {
-                                        case "forca":
-                                        case "sagacidade":
-                                            addEfeito(tipoPocao, {
-                                                forca: atributos.forca,
-                                                sagacidade:
-                                                    atributos.sagacidade,
-                                                tempo: 10,
-                                            })
-                                    }
-
-                                    if (bebidas.length === 0) {
-                                        delete draft.mochila.bebidas[tipoPocao]
-                                    } else {
-                                        draft.mochila.bebidas[tipoPocao] =
-                                            bebidas
-                                    }
                                 }),
                             )
+                            switch (tipoPocao) {
+                                case "forca":
+                                case "sagacidade":
+                                    addEfeito(tipoPocao, {
+                                        forca: atributos.forca,
+                                        sagacidade: atributos.sagacidade,
+                                        tempo: 10,
+                                    })
+                            }
                         }}
                     />
                     <BattleSection
