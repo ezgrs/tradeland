@@ -31,6 +31,7 @@ import { Bebida } from "@/src/domain/entities/Bebida"
 import { Comida } from "@/src/domain/entities/Comida"
 import { FinalBatalha } from "./models/FinalBatalha"
 import { Golpe } from "@/src/domain/entities/Golpe"
+import { useEfeitos } from "./hooks/efeitos"
 
 type JogadorState = {
     controller: JogadorController<Jogador>
@@ -112,36 +113,7 @@ export default function GameDashboard() {
         return () => clearInterval(id)
     }, [])
 
-    type Efeito = {
-        forca: number
-        sagacidade: number
-        tempo: number
-    }
-    const [efeitos, setEfeitos] = useState<Map<"forca" | "sagacidade", Efeito>>(
-        new Map(),
-    )
-    const hasEfeitos = efeitos.size > 0
-    useEffect(() => {
-        if (!hasEfeitos) return
-        const id = setInterval(() => {
-            setEfeitos((efeitos) => {
-                const updatedEfeitos = new Map(efeitos)
-                for (const [tipoEfeito, efeito] of efeitos.entries()) {
-                    const novoTempo = efeito.tempo - 1
-                    if (novoTempo <= 0) {
-                        updatedEfeitos.delete(tipoEfeito)
-                    } else {
-                        updatedEfeitos.set(tipoEfeito, {
-                            ...efeito,
-                            tempo: novoTempo,
-                        })
-                    }
-                }
-                return updatedEfeitos
-            })
-        }, 1_000)
-        return () => clearInterval(id)
-    }, [hasEfeitos])
+    const [efeitos, addEfeito] = useEfeitos<"forca" | "sagacidade">()
 
     const state = produce(_state, (draft) => {
         if (draft == null) return
@@ -507,17 +479,12 @@ export default function GameDashboard() {
                                     switch (tipoPocao) {
                                         case "forca":
                                         case "sagacidade":
-                                            setEfeitos((efeitos) =>
-                                                new Map(efeitos).set(
-                                                    tipoPocao,
-                                                    {
-                                                        forca: atributos.forca,
-                                                        sagacidade:
-                                                            atributos.sagacidade,
-                                                        tempo: 10,
-                                                    },
-                                                ),
-                                            )
+                                            addEfeito(tipoPocao, {
+                                                forca: atributos.forca,
+                                                sagacidade:
+                                                    atributos.sagacidade,
+                                                tempo: 10,
+                                            })
                                     }
 
                                     if (bebidas.length === 0) {
