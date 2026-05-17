@@ -335,7 +335,7 @@ export default function GameDashboard() {
                                     addEfeito(tipoPocao, {
                                         forca: atributos.forca,
                                         sagacidade: atributos.sagacidade,
-                                        tempo: 10,
+                                        tempo: 60,
                                     })
                             }
                         }}
