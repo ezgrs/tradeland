@@ -1,7 +1,6 @@
 "use client"
 
 import { LogsSection } from "./components/LogsSection"
-import { createLog } from "./models/Log"
 import { InventorySection } from "./components/InventorySection"
 import { StatisticsSection } from "./components/StatisticsSection"
 import { BattleSection } from "./components/BattleSection"
@@ -20,6 +19,8 @@ import { Comida } from "@/src/domain/entities/Comida"
 import { FinalBatalha } from "./models/FinalBatalha"
 import { Golpe } from "@/src/domain/entities/Golpe"
 import { useEstado } from "./hooks/estado"
+import { useEffect } from "react"
+import { useLogs } from "./hooks/logs"
 
 export default function GameDashboard() {
     const hook = useEstado()
@@ -27,13 +28,19 @@ export default function GameDashboard() {
 
     const [estado, setEstado, efeitos, addEfeito] = hook
     const { jogador, partida, carteira, mochila } = estado
+    const [logs, addLog, clearLogs] = useLogs()
+
+    const tier = Math.min(31 - Math.clz32(jogador.nivel), 6)
+    useEffect(() => {
+        if (tier == null) return
+        if (tier < 2) return
+        addLog("inesperado", "Você desbloqueou um novo ataque!")
+    }, [tier])
 
     function onEncontraMoedas(valor: number) {
+        addLog("positivo", `Você encontrou ${valor} moedas!`)
         setEstado(
             produce((draft) => {
-                draft.logs.unshift(
-                    createLog("positivo", `Você encontrou ${valor} moedas!`),
-                )
                 draft.carteira.valor += valor
             }),
         )
@@ -49,14 +56,12 @@ export default function GameDashboard() {
             frango: "um frango",
         }
         const tipoAlimento = comida.calculaTipo()
+        addLog(
+            "positivo",
+            `Você encontrou ${labelsAlimentos[comida.calculaTipo()]}!`,
+        )
         setEstado(
             produce((draft) => {
-                draft.logs.unshift(
-                    createLog(
-                        "positivo",
-                        `Você encontrou ${labelsAlimentos[comida.calculaTipo()]}!`,
-                    ),
-                )
                 const comidas = (draft.mochila.comidas[tipoAlimento] ??= [])
                 comidas.push(comida)
             }),
@@ -70,14 +75,12 @@ export default function GameDashboard() {
             forca: "força",
         }
         const tipoPocao = bebida.calculaTipo()
+        addLog(
+            "positivo",
+            `Você encontrou uma poção de ${labelsPocoes[tipoPocao]}!`,
+        )
         setEstado(
             produce((draft) => {
-                draft.logs.unshift(
-                    createLog(
-                        "positivo",
-                        `Você encontrou uma poção de ${labelsPocoes[tipoPocao]}!`,
-                    ),
-                )
                 const bebidas = (draft.mochila.bebidas[tipoPocao] ??= [])
                 bebidas.push(bebida)
             }),
@@ -93,14 +96,12 @@ export default function GameDashboard() {
             bruxa: "uma bruxa",
             vampiro: "um vampiro",
         }
+        addLog(
+            "neutro",
+            `Você encontrou ${labelsInimigos[inimigo.tipo]}, prepare-se!`,
+        )
         setEstado(
             produce((draft) => {
-                draft.logs.unshift(
-                    createLog(
-                        "neutro",
-                        `Você encontrou ${labelsInimigos[inimigo.tipo]}, prepare-se!`,
-                    ),
-                )
                 draft.inimigo = inimigo
             }),
         )
@@ -115,14 +116,13 @@ export default function GameDashboard() {
             bruxa: "na bruxa",
             vampiro: "no vampiro",
         }
+
+        addLog(
+            "neutro",
+            `Você causou ${dano} pontos de dano ${labelsInimigos[inimigo.tipo]}.`,
+        )
         setEstado(
             produce((draft) => {
-                draft.logs.unshift(
-                    createLog(
-                        "neutro",
-                        `Você causou ${dano} pontos de dano ${labelsInimigos[inimigo.tipo]}.`,
-                    ),
-                )
                 const novoHpInimigo = inimigo.hp - dano
                 if (novoHpInimigo > 0) {
                     draft.inimigo = { ...inimigo, hp: novoHpInimigo }
@@ -275,14 +275,8 @@ export default function GameDashboard() {
                     </StatisticsSection>
                     <LogsSection
                         title="Logs de Registro"
-                        logs={estado.logs}
-                        onClearLogs={() =>
-                            setEstado(
-                                produce((draft) => {
-                                    draft.logs = []
-                                }),
-                            )
-                        }
+                        logs={logs}
+                        onClearLogs={clearLogs}
                     />
                 </div>
 
@@ -301,19 +295,15 @@ export default function GameDashboard() {
 
                                     switch (comida.calculaTempero()) {
                                         case "amargo":
-                                            draft.logs.unshift(
-                                                createLog(
-                                                    "inesperado",
-                                                    "Alguém amargou isso, sua fome piorou!",
-                                                ),
+                                            addLog(
+                                                "inesperado",
+                                                "Alguém amargou isso, sua fome piorou!",
                                             )
                                             break
                                         case "doce":
-                                            draft.logs.unshift(
-                                                createLog(
-                                                    "inesperado",
-                                                    "Alguém colocou algo gostoso nisso, sua fome melhorou!",
-                                                ),
+                                            addLog(
+                                                "inesperado",
+                                                "Alguém colocou algo gostoso nisso, sua fome melhorou!",
                                             )
                                             break
                                     }
@@ -342,11 +332,9 @@ export default function GameDashboard() {
                                     if (bebida == null) return
 
                                     if (bebida.calculaTipoElixir() != null) {
-                                        draft.logs.unshift(
-                                            createLog(
-                                                "inesperado",
-                                                "Esta poção foi tonificada e é mais potente!",
-                                            ),
+                                        addLog(
+                                            "inesperado",
+                                            "Esta poção foi tonificada e é mais potente!",
                                         )
                                     }
 

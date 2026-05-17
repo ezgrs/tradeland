@@ -13,5 +13,4 @@ export type Estado = {
     mochila: Mochila
     golpe: Golpe | null
     inimigo: Inimigo | null
-    logs: Log[]
 }

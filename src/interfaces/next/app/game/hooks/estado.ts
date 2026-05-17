@@ -1,11 +1,9 @@
-import { RefObject, useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { Estado } from "../models/Estado"
-import { Jogador } from "@/src/domain/entities/Jogador"
 import { Partida } from "../models/Partida"
 import { useRouter } from "next/router"
 import { produce } from "immer"
 import { Efeito, useEfeitos } from "./efeitos"
-import { createLog } from "../models/Log"
 import {
     ClasseCurandeiro,
     ClasseGladiador,
@@ -69,7 +67,6 @@ export function useEstado():
             },
             golpe: null,
             inimigo: null,
-            logs: [],
         })
     }, [router])
 
@@ -97,21 +94,6 @@ export function useEstado():
             draft.jogador.sagacidade += efeito.sagacidade
         }
     })
-    const tier =
-        estado == null
-            ? null
-            : Math.min(31 - Math.clz32(estado.jogador.nivel), 6)
-    useEffect(() => {
-        if (tier == null) return
-        if (tier < 2) return
-        setEstado(
-            produce((draft) => {
-                draft.logs.unshift(
-                    createLog("inesperado", "Você desbloqueou um novo ataque!"),
-                )
-            }),
-        )
-    }, [tier])
 
     if (estado == null) return null
     return [estado, setEstado, efeitos, addEfeito]
