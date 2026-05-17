@@ -9,7 +9,6 @@ import {
 } from "../../../components/ui/card"
 import { cn } from "../../../lib/utils"
 import { Progress } from "../../../components/ui/progress"
-import { TipoPersonagem } from "@/src/domain/entities/Personagem"
 import {
     SelectTrigger,
     SelectValue,
@@ -21,6 +20,7 @@ import { Jogador } from "@/src/domain/entities/Jogador"
 import { Golpe } from "@/src/domain/entities/Golpe"
 import { Partida } from "../models/Partida"
 import { Inimigo, TipoInimigo } from "@/src/domain/entities/Inimigo"
+import { Classe } from "@/src/domain/entities/Classe"
 
 const labelsArmaduras: Record<TipoArmadura, string> = {
     elmo: "Elmo",
@@ -31,36 +31,9 @@ const labelsArmaduras: Record<TipoArmadura, string> = {
 
 type AtaquesSelectProps = {
     nivel: number
-    tipoPersonagem: TipoPersonagem
+    classe: Classe
     golpe: Golpe | null
     onSelected: ((golpe: Golpe | null) => void) | null
-}
-
-const labelsGolpes: Record<TipoPersonagem, Record<Golpe, string>> = {
-    curandeiro: {
-        lvl1: "Clarão de luz",
-        lvl2: "Névoa lacrimejante",
-        lvl3: "Raio de fogo",
-        lvl4: "Penitência",
-        lvl5: "Choque sagrado",
-        lvl6: "Cura reversa",
-    },
-    gladiador: {
-        lvl1: "Soco paralisante",
-        lvl2: "Picada de abelha",
-        lvl3: "Avalanche manual",
-        lvl4: "Golpe cauterizador",
-        lvl5: "Murro da aflição",
-        lvl6: "Apunhalada mortal",
-    },
-    mago: {
-        lvl1: "Raio de energia",
-        lvl2: "Espinhos mágicos",
-        lvl3: "Rajada de fogo",
-        lvl4: "Trovão incandescente",
-        lvl5: "Explosão mística",
-        lvl6: "Sopro do dragão",
-    },
 }
 
 const enumGolpes = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"] as const
@@ -95,7 +68,7 @@ function AtaquesSelect(props: AtaquesSelectProps) {
                     const label =
                         golpe == null
                             ? "Ataque padrão"
-                            : labelsGolpes[props.tipoPersonagem][golpe]
+                            : props.classe.nomeiaGolpe(golpe)
                     return (
                         <SelectItem key={label} value={golpe ?? "_"}>
                             {label}
@@ -154,7 +127,7 @@ export function BattleSection(props: Props) {
                 )}
                 <AtaquesSelect
                     nivel={jogador.nivel}
-                    tipoPersonagem={partida.tipoPersonagem}
+                    classe={partida.classePersonagem}
                     golpe={props.golpe}
                     onSelected={inimigo == null ? null : props.onUpdateGolpe}
                 />

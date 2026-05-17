@@ -13,14 +13,10 @@ import {
     TemperoAmargo,
     TemperoDoce,
 } from "../entities/Comida"
-import { Dificuldade } from "../entities/Dificuldade"
 import { ClasseEspolio, Espolio, espolios } from "../entities/Espolio"
-import { Inimigo, TipoInimigo } from "../entities/Inimigo"
-import {
-    comportamentosPersonagens,
-    TipoPersonagem,
-} from "../entities/Personagem"
+import { TipoInimigo } from "../entities/Inimigo"
 import { TipoPocao } from "../entities/Pocao"
+import { Classe } from "../entities/Classe"
 
 type AchadoBau = { tipo: "bau"; item: ItemBau }
 type AchadoInimigo = {
@@ -35,13 +31,9 @@ type BebidaBau = { tipo: "bebida"; bebida: Bebida }
 type DinheiroBau = { tipo: "dinheiro"; moedas: number }
 type ItemBau = ComidaBau | BebidaBau | DinheiroBau
 
-type ExecutaPasseioArgs = {
-    tipoPersonagem: TipoPersonagem
-}
-
 export function executaPasseio(
     probabilidade: Probabilidade,
-    args: ExecutaPasseioArgs,
+    classe: Classe,
 ): AchadoPasseio {
     const tipoAchado = probabilidade.porChaves<AchadoPasseio["tipo"]>({
         bau: 3,
@@ -94,16 +86,7 @@ export function executaPasseio(
                         { peso: 2, valor: (bebida) => bebida },
                         {
                             peso: 1,
-                            valor: (bebida) => {
-                                switch (args.tipoPersonagem) {
-                                    case "mago":
-                                        return new ElixirSagacidade(bebida)
-                                    case "gladiador":
-                                        return new ElixirForca(bebida)
-                                    case "curandeiro":
-                                        return new ElixirVida(bebida)
-                                }
-                            },
+                            valor: classe.criaElixir,
                         },
                     ])
                     return {

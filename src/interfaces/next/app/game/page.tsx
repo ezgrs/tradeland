@@ -11,7 +11,6 @@ import { IconBuildingStore, IconBong } from "@tabler/icons-react"
 import { RideButton } from "./components/RideButton"
 import { TipoAlimento } from "@/src/domain/entities/Alimento"
 import { produce } from "immer"
-import { comportamentosPersonagens } from "@/src/domain/entities/Personagem"
 import { TipoPocao } from "@/src/domain/entities/Pocao"
 import { AchadoPasseio, executaPasseio } from "@/src/domain/services/passeio"
 import { ProbabilidadeAleatoria } from "@/src/infrastructure/services/Probabilidade/aleatoria"
@@ -163,9 +162,11 @@ export default function GameDashboard() {
                                         estado.golpe == null
                                             ? 10
                                             : (tiers[estado.golpe] + 1) * 10
-                                    const dano = comportamentosPersonagens[
-                                        partida.tipoPersonagem
-                                    ].calculaDano(jogador, danoGolpe)
+                                    const dano =
+                                        partida.classePersonagem.calculaDano(
+                                            jogador,
+                                            danoGolpe,
+                                        )
                                     onAtacaInimigo(inimigo, dano)
                                     return dano
                                 },
@@ -188,10 +189,7 @@ export default function GameDashboard() {
                                 async onSomethingFound(): Promise<AchadoPasseio> {
                                     const achado = executaPasseio(
                                         new ProbabilidadeAleatoria(),
-                                        {
-                                            tipoPersonagem:
-                                                partida.tipoPersonagem,
-                                        },
+                                        partida.classePersonagem,
                                     )
                                     switch (achado.tipo) {
                                         case "bau":
@@ -234,9 +232,9 @@ export default function GameDashboard() {
 
                                             let jogador = draft.jogador
                                             jogador =
-                                                comportamentosPersonagens[
-                                                    partida.tipoPersonagem
-                                                ].quandoVenceBatalha(jogador)
+                                                partida.classePersonagem.evoluiBatalha(
+                                                    jogador,
+                                                )
                                             const nivelAtual = jogador.nivel
                                             jogador =
                                                 jogadorRef.current.listener.aumentaXp(
@@ -245,9 +243,9 @@ export default function GameDashboard() {
                                                 )
                                             if (jogador.nivel > nivelAtual) {
                                                 jogador =
-                                                    comportamentosPersonagens[
-                                                        partida.tipoPersonagem
-                                                    ].quandoSobeNivel(jogador)
+                                                    partida.classePersonagem.evoluiNivel(
+                                                        jogador,
+                                                    )
                                             }
                                             draft.jogador = jogador
                                             switch (result.type) {

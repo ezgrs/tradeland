@@ -1,6 +1,5 @@
 import { RefObject, useEffect, useRef, useState } from "react"
 import { Estado } from "../models/Estado"
-import { comportamentosPersonagens } from "@/src/domain/entities/Personagem"
 import { Jogador } from "@/src/domain/entities/Jogador"
 import { Partida } from "../models/Partida"
 import { useRouter } from "next/router"
@@ -13,6 +12,12 @@ import {
     JogadorController,
     JogadorListener,
 } from "@/src/domain/services/jogador"
+import {
+    ClasseCurandeiro,
+    ClasseGladiador,
+    ClasseMago,
+    ClassePadrao,
+} from "@/src/domain/entities/Classe"
 
 type TipoEfeito = "forca" | "sagacidade"
 
@@ -46,28 +51,26 @@ export function useEstado():
             return
         }
         const userData = JSON.parse(stored)
+        let classe = new ClassePadrao()
+        switch (userData["classe"]) {
+            case "curandeiro":
+                classe = new ClasseCurandeiro(classe)
+                break
+            case "gladiador":
+                classe = new ClasseGladiador(classe)
+                break
+            case "mago":
+                classe = new ClasseMago(classe)
+                break
+        }
         const partida: Partida = {
             nomePersonagem: userData["nome"],
-            tipoPersonagem: userData["classe"],
+            classePersonagem: classe,
             dificuldade: userData["dificuldade"],
-        }
-        const maxHp = 100
-        const jogador: Jogador = {
-            hp: maxHp,
-            maxHp: maxHp,
-            forca: 10,
-            sagacidade: 0,
-            nivel: 1,
-            fome: 0,
-            xp: 0,
-            resistencias: {},
         }
         setState({
             partida: partida,
-            jogador:
-                comportamentosPersonagens[
-                    partida.tipoPersonagem
-                ].quandoEhCriado(jogador),
+            jogador: classe.criaJogador(),
             carteira: {
                 valor: 0,
             },
