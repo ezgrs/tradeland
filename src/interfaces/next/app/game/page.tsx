@@ -19,7 +19,7 @@ import { Comida } from "@/src/domain/entities/Comida"
 import { FinalBatalha } from "./models/FinalBatalha"
 import { Golpe } from "@/src/domain/entities/Golpe"
 import { useJogador } from "./hooks/jogador"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useLogs } from "./hooks/logs"
 import { useCarteira } from "./hooks/carteira"
 import { useSacola } from "./hooks/sacola"
@@ -31,6 +31,7 @@ import {
     ClasseMago,
     ClassePadrao,
 } from "@/src/domain/entities/Classe"
+import { Probabilidade } from "@/src/domain/entities/Probabilidade"
 
 export default function GameDashboard() {
     const hook = useJogador({
@@ -60,6 +61,7 @@ export default function GameDashboard() {
     })
     if (!hook) return null
 
+    const probabilidadeRef = useRef<Probabilidade>(new ProbabilidadeAleatoria())
     const [partida, jogador, setJogador, efeitos, addEfeito] = hook
     const [moedas, depositCoins] = useCarteira()
     const [logs, addLog, clearLogs] = useLogs()
@@ -199,7 +201,7 @@ export default function GameDashboard() {
                             listener={{
                                 async onSomethingFound(): Promise<AchadoPasseio> {
                                     const achado = executaPasseio(
-                                        new ProbabilidadeAleatoria(),
+                                        probabilidadeRef.current,
                                         partida.personagem.classe,
                                     )
                                     switch (achado.tipo) {
