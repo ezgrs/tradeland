@@ -6,7 +6,7 @@ import { Partida } from "./Partida"
 import { Golpe } from "@/src/domain/entities/Golpe"
 import { Inimigo } from "@/src/domain/entities/Inimigo"
 
-export type State = {
+export type Estado = {
     partida: Partida
     jogador: Jogador
     carteira: Carteira

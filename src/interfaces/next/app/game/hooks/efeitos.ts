@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-type Efeito = {
+export type Efeito = {
     forca: number
     sagacidade: number
     tempo: number

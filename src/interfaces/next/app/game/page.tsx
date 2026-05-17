@@ -1,16 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
-import { Jogador } from "@/src/domain/entities/Jogador"
-import {
-    DefaultJogadorController,
-    DefaultJogadorListener,
-    JogadorController,
-    JogadorListener,
-} from "@/src/domain/services/jogador"
 import { LogsSection } from "./components/LogsSection"
-import { State } from "./models/State"
 import { createLog } from "./models/Log"
 import { InventorySection } from "./components/InventorySection"
 import { StatisticsSection } from "./components/StatisticsSection"
@@ -21,7 +11,6 @@ import { IconBuildingStore, IconBong } from "@tabler/icons-react"
 import { RideButton } from "./components/RideButton"
 import { TipoAlimento } from "@/src/domain/entities/Alimento"
 import { produce } from "immer"
-import { Partida } from "./models/Partida"
 import { comportamentosPersonagens } from "@/src/domain/entities/Personagem"
 import { TipoPocao } from "@/src/domain/entities/Pocao"
 import { AchadoPasseio, executaPasseio } from "@/src/domain/services/passeio"
@@ -31,117 +20,17 @@ import { Bebida } from "@/src/domain/entities/Bebida"
 import { Comida } from "@/src/domain/entities/Comida"
 import { FinalBatalha } from "./models/FinalBatalha"
 import { Golpe } from "@/src/domain/entities/Golpe"
-import { useEfeitos } from "./hooks/efeitos"
-
-type JogadorState = {
-    controller: JogadorController<Jogador>
-    listener: JogadorListener<Jogador>
-}
+import { useEstado } from "./hooks/estado"
 
 export default function GameDashboard() {
-    const router = useRouter()
-    const [_state, _setState] = useState<State | null>(null)
+    const hook = useEstado()
+    if (!hook) return null
 
-    function setState(action: (state: State) => State): void {
-        _setState((state) => {
-            if (state == null) return null
-            return action(state)
-        })
-    }
-
-    const jogadorRef = useRef<JogadorState>(
-        (() => {
-            const controller = new DefaultJogadorController()
-            return {
-                controller,
-                listener: new DefaultJogadorListener(controller),
-            }
-        })(),
-    )
-    useEffect(() => {
-        const stored = sessionStorage.getItem("userData")
-        if (!stored) {
-            router.replace("/")
-            return
-        }
-        const userData = JSON.parse(stored)
-        const partida: Partida = {
-            nomePersonagem: userData["nome"],
-            tipoPersonagem: userData["classe"],
-            dificuldade: userData["dificuldade"],
-        }
-        const jogador: Jogador = {
-            hp: 100,
-            maxHp: 100,
-            forca: 10,
-            sagacidade: 0,
-            nivel: 1,
-            fome: 0,
-            xp: 0,
-            resistencias: {},
-        }
-        _setState({
-            partida: partida,
-            jogador:
-                comportamentosPersonagens[
-                    partida.tipoPersonagem
-                ].quandoEhCriado(jogador),
-            carteira: {
-                valor: 0,
-            },
-            mochila: {
-                espolios: {},
-                comidas: {},
-                bebidas: {},
-            },
-            golpe: null,
-            inimigo: null,
-            logs: [],
-        })
-    }, [router])
-    useEffect(() => {
-        const id = setInterval(() => {
-            setState(
-                produce((draft) => {
-                    draft.jogador = jogadorRef.current.controller.alteraFome(
-                        draft.jogador,
-                        5,
-                    )
-                }),
-            )
-        }, 60_000)
-        return () => clearInterval(id)
-    }, [])
-
-    const [efeitos, addEfeito] = useEfeitos<"forca" | "sagacidade">()
-
-    const state = produce(_state, (draft) => {
-        if (draft == null) return
-        // Inclui efeitos ativos
-        for (const [_, efeito] of efeitos.entries()) {
-            draft.jogador.forca += efeito.forca
-            draft.jogador.sagacidade += efeito.sagacidade
-        }
-    })
-    const tier =
-        state == null ? null : Math.min(31 - Math.clz32(state.jogador.nivel), 6)
-    useEffect(() => {
-        if (tier == null) return
-        if (tier < 2) return
-        setState(
-            produce((draft) => {
-                draft.logs.unshift(
-                    createLog("inesperado", "Você desbloqueou um novo ataque!"),
-                )
-            }),
-        )
-    }, [tier])
-
-    if (!state) return null
-    const { jogador, partida, carteira, mochila } = state
+    const [estado, setEstado, jogadorRef, efeitos, addEfeito] = hook
+    const { jogador, partida, carteira, mochila } = estado
 
     function onEncontraMoedas(valor: number) {
-        setState(
+        setEstado(
             produce((draft) => {
                 draft.logs.unshift(
                     createLog("positivo", `Você encontrou ${valor} moedas!`),
@@ -161,7 +50,7 @@ export default function GameDashboard() {
             frango: "um frango",
         }
         const tipoAlimento = comida.calculaTipo()
-        setState(
+        setEstado(
             produce((draft) => {
                 draft.logs.unshift(
                     createLog(
@@ -182,7 +71,7 @@ export default function GameDashboard() {
             forca: "força",
         }
         const tipoPocao = bebida.calculaTipo()
-        setState(
+        setEstado(
             produce((draft) => {
                 draft.logs.unshift(
                     createLog(
@@ -205,7 +94,7 @@ export default function GameDashboard() {
             bruxa: "uma bruxa",
             vampiro: "um vampiro",
         }
-        setState(
+        setEstado(
             produce((draft) => {
                 draft.logs.unshift(
                     createLog(
@@ -227,7 +116,7 @@ export default function GameDashboard() {
             bruxa: "na bruxa",
             vampiro: "no vampiro",
         }
-        setState(
+        setEstado(
             produce((draft) => {
                 draft.logs.unshift(
                     createLog(
@@ -271,9 +160,9 @@ export default function GameDashboard() {
                                         lvl6: 6,
                                     }
                                     const danoGolpe =
-                                        state.golpe == null
+                                        estado.golpe == null
                                             ? 10
-                                            : (tiers[state.golpe] + 1) * 10
+                                            : (tiers[estado.golpe] + 1) * 10
                                     const dano = comportamentosPersonagens[
                                         partida.tipoPersonagem
                                     ].calculaDano(jogador, danoGolpe)
@@ -283,7 +172,7 @@ export default function GameDashboard() {
                                 async consumeDamage(
                                     valor: number,
                                 ): Promise<void> {
-                                    setState(
+                                    setEstado(
                                         produce((draft) => {
                                             draft.jogador =
                                                 jogadorRef.current.listener.recebeDano(
@@ -339,7 +228,7 @@ export default function GameDashboard() {
                                 async onBattleFinished(
                                     result: FinalBatalha,
                                 ): Promise<void> {
-                                    setState(
+                                    setEstado(
                                         produce((draft) => {
                                             draft.inimigo = null
 
@@ -394,9 +283,9 @@ export default function GameDashboard() {
                     </StatisticsSection>
                     <LogsSection
                         title="Logs de Registro"
-                        logs={state.logs}
+                        logs={estado.logs}
                         onClearLogs={() =>
-                            setState(
+                            setEstado(
                                 produce((draft) => {
                                     draft.logs = []
                                 }),
@@ -410,7 +299,7 @@ export default function GameDashboard() {
                         title="Inventário"
                         mochila={mochila}
                         onEat={(tipoAlimento) => {
-                            setState(
+                            setEstado(
                                 produce((draft) => {
                                     const comidas =
                                         draft.mochila.comidas[tipoAlimento] ??
@@ -453,7 +342,7 @@ export default function GameDashboard() {
                             )
                         }}
                         onDrink={(tipoPocao) => {
-                            setState(
+                            setEstado(
                                 produce((draft) => {
                                     const bebidas =
                                         draft.mochila.bebidas[tipoPocao] ?? []
@@ -501,14 +390,14 @@ export default function GameDashboard() {
                         title="Batalha"
                         jogador={jogador}
                         partida={partida}
-                        golpe={state.golpe}
-                        inimigo={state.inimigo}
+                        golpe={estado.golpe}
+                        inimigo={estado.inimigo}
                         potions={{
                             forca: efeitos.get("forca")?.tempo,
                             sagacidade: efeitos.get("sagacidade")?.tempo,
                         }}
                         onUpdateGolpe={(golpe) => {
-                            setState(
+                            setEstado(
                                 produce((draft) => {
                                     draft.golpe = golpe
                                 }),
