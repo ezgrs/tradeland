@@ -391,9 +391,16 @@ export default function GameDashboard() {
                                             draft.jogador = jogador
                                             switch (result.type) {
                                                 case "vitoria":
-                                                    if (result.espolio != null) {
-                                                        const espolios = draft.mochila.espolios[result.espolio.id] ??= []
-                                                        espolios.push(result.espolio)
+                                                    if (
+                                                        result.espolio != null
+                                                    ) {
+                                                        const espolios =
+                                                            (draft.mochila.espolios[
+                                                                result.espolio.id
+                                                            ] ??= [])
+                                                        espolios.push(
+                                                            result.espolio,
+                                                        )
                                                     }
                                             }
                                         }),
@@ -404,11 +411,12 @@ export default function GameDashboard() {
                         />
                         <div className="flex flex-wrap justify-center gap-4">
                             <Button variant="secondary" className="gap-2">
-                                <IconBuildingStore className="h-4 w-4" /> Visitar
-                                comerciante
+                                <IconBuildingStore className="h-4 w-4" />{" "}
+                                Visitar comerciante
                             </Button>
                             <Button variant="secondary" className="gap-2">
-                                <IconBong className="h-4 w-4" /> Visitar alquimista
+                                <IconBong className="h-4 w-4" /> Visitar
+                                alquimista
                             </Button>
                         </div>
                     </StatisticsSection>

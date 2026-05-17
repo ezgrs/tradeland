@@ -64,7 +64,10 @@ async function travel(args: TravelArgs): Promise<void> {
                 const appliedDamage = await traveler.produceDamage(enemy)
                 const newEnemyHp = enemy.hp - appliedDamage
                 if (newEnemyHp <= 0) {
-                    await listener.onBattleFinished({type: "vitoria", espolio: currentEvent.reward})
+                    await listener.onBattleFinished({
+                        type: "vitoria",
+                        espolio: currentEvent.reward,
+                    })
                     currentEvent = { action: "walking" }
                     break
                 }
@@ -74,7 +77,7 @@ async function travel(args: TravelArgs): Promise<void> {
                     await traveler.consumeDamage(receivedDamage)
                 } catch (e) {
                     if (e instanceof JogadorMorreu) {
-                        await listener.onBattleFinished({type: "morte"})
+                        await listener.onBattleFinished({ type: "morte" })
                         return
                     }
                     throw e
@@ -88,7 +91,7 @@ async function travel(args: TravelArgs): Promise<void> {
         }
     }
     if (currentEvent?.action == "fighting") {
-        await listener.onBattleFinished({type: "fuga"})
+        await listener.onBattleFinished({ type: "fuga" })
     }
 }
 

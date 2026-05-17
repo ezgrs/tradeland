@@ -117,7 +117,7 @@ export function StatisticsSection(props: Props) {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-col pt-5 items-center gap-3">
+                <div className="flex flex-col items-center gap-3 pt-5">
                     {props.children}
                 </div>
             </CardContent>
