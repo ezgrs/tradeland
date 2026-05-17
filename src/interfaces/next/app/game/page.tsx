@@ -21,13 +21,15 @@ import { Golpe } from "@/src/domain/entities/Golpe"
 import { useEstado } from "./hooks/estado"
 import { useEffect } from "react"
 import { useLogs } from "./hooks/logs"
+import { useCarteira } from "./hooks/carteira"
 
 export default function GameDashboard() {
     const hook = useEstado()
     if (!hook) return null
 
     const [estado, setEstado, efeitos, addEfeito] = hook
-    const { jogador, partida, carteira, mochila } = estado
+    const { jogador, partida, mochila } = estado
+    const [moedas, depositCoins] = useCarteira()
     const [logs, addLog, clearLogs] = useLogs()
 
     const tier = Math.min(31 - Math.clz32(jogador.nivel), 6)
@@ -39,11 +41,7 @@ export default function GameDashboard() {
 
     function onEncontraMoedas(valor: number) {
         addLog("positivo", `Você encontrou ${valor} moedas!`)
-        setEstado(
-            produce((draft) => {
-                draft.carteira.valor += valor
-            }),
-        )
+        depositCoins(valor)
     }
 
     function onEncontraComida(comida: Comida) {
@@ -138,7 +136,7 @@ export default function GameDashboard() {
                     <StatisticsSection
                         title="Estatísticas"
                         jogador={jogador}
-                        carteira={carteira}
+                        moedas={moedas}
                     >
                         <RideButton
                             offLabel="Iniciar passeio"

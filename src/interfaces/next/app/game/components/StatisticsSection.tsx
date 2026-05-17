@@ -12,20 +12,19 @@ import {
 } from "../../../components/ui/card"
 import { Jogador } from "@/src/domain/entities/Jogador"
 import { Progress } from "../../../components/ui/progress"
-import { Carteira } from "@/src/domain/entities/Carteira"
 import { JSX } from "react"
 
 type Props = {
     title: string
 
     jogador: Jogador
-    carteira: Carteira
+    moedas: number
 
     children: JSX.Element[]
 }
 
 export function StatisticsSection(props: Props) {
-    const { jogador, carteira } = props
+    const { jogador, moedas } = props
     return (
         <Card className="border-slate-800 bg-slate-900">
             <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 px-6 py-1">
@@ -99,9 +98,7 @@ export function StatisticsSection(props: Props) {
                                 <p className="text-[10px] text-slate-400 uppercase">
                                     Carteira
                                 </p>
-                                <p className="text-lg font-bold">
-                                    ${carteira.valor}
-                                </p>
+                                <p className="text-lg font-bold">${moedas}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">

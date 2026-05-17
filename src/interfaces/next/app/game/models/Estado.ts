@@ -9,7 +9,6 @@ import { Inimigo } from "@/src/domain/entities/Inimigo"
 export type Estado = {
     partida: Partida
     jogador: Jogador
-    carteira: Carteira
     mochila: Mochila
     golpe: Golpe | null
     inimigo: Inimigo | null

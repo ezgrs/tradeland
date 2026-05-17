@@ -57,9 +57,6 @@ export function useEstado():
         setState({
             partida: partida,
             jogador: classe.criaJogador(),
-            carteira: {
-                valor: 0,
-            },
             mochila: {
                 espolios: {},
                 comidas: {},
