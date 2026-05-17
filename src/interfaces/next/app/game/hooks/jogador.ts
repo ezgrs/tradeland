@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { Estado } from "../models/Estado"
 import { Partida } from "../models/Partida"
 import { useRouter } from "next/router"
 import { produce } from "immer"
@@ -11,22 +10,28 @@ import {
     ClassePadrao,
 } from "@/src/domain/entities/Classe"
 import { Personagem } from "@/src/domain/services/Personagem"
+import { Jogador } from "@/src/domain/entities/Jogador"
 
+type State = {
+    jogador: Jogador
+    partida: Partida
+}
 type TipoEfeito = "forca" | "sagacidade"
 
-export function useEstado():
+export function useJogador():
     | [
-          Estado,
-          (action: (state: Estado) => Estado) => void,
+          Partida,
+          Jogador,
+          (action: (state: Jogador) => Jogador) => void,
           Map<TipoEfeito, Efeito>,
           (value: TipoEfeito, efeito: Efeito) => void,
       ]
     | null {
-    const [state, setState] = useState<Estado | null>(null)
-    function setEstado(action: (state: Estado) => Estado) {
+    const [state, setState] = useState<State | null>(null)
+    function setJogador(action: (jogador: Jogador) => Jogador) {
         setState((estado) => {
             if (estado == null) return null
-            return action(estado)
+            return { ...estado, jogador: action(estado.jogador) }
         })
     }
 
@@ -62,19 +67,21 @@ export function useEstado():
 
     useEffect(() => {
         const id = setInterval(() => {
-            setEstado(
-                produce((draft) => {
-                    draft.jogador = draft.partida.personagem.diminuiFome(
-                        draft.jogador,
+            setState((state) => {
+                if (state == null) return null
+                return {
+                    ...state,
+                    jogador: state.partida.personagem.diminuiFome(
+                        state.jogador,
                         -5,
-                    )
-                }),
-            )
+                    ),
+                }
+            })
         }, 60_000)
         return () => clearInterval(id)
     }, [])
 
-    const [efeitos, addEfeito] = useEfeitos<"forca" | "sagacidade">()
+    const [efeitos, addEfeito] = useEfeitos<TipoEfeito>()
 
     const estado = produce(state, (draft) => {
         if (draft == null) return
@@ -86,5 +93,5 @@ export function useEstado():
     })
 
     if (estado == null) return null
-    return [estado, setEstado, efeitos, addEfeito]
+    return [estado.partida, estado.jogador, setJogador, efeitos, addEfeito]
 }

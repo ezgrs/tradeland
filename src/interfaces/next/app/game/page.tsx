@@ -18,7 +18,7 @@ import { Bebida } from "@/src/domain/entities/Bebida"
 import { Comida } from "@/src/domain/entities/Comida"
 import { FinalBatalha } from "./models/FinalBatalha"
 import { Golpe } from "@/src/domain/entities/Golpe"
-import { useEstado } from "./hooks/estado"
+import { useJogador } from "./hooks/jogador"
 import { useEffect, useState } from "react"
 import { useLogs } from "./hooks/logs"
 import { useCarteira } from "./hooks/carteira"
@@ -26,11 +26,10 @@ import { useSacola } from "./hooks/sacola"
 import { Espolio } from "@/src/domain/entities/Espolio"
 
 export default function GameDashboard() {
-    const hook = useEstado()
+    const hook = useJogador()
     if (!hook) return null
 
-    const [estado, setEstado, efeitos, addEfeito] = hook
-    const { jogador, partida } = estado
+    const [partida, jogador, setJogador, efeitos, addEfeito] = hook
     const [moedas, depositCoins] = useCarteira()
     const [logs, addLog, clearLogs] = useLogs()
     const [espolios, addEspolio, _] = useSacola<Espolio["id"], Espolio>()
@@ -157,14 +156,11 @@ export default function GameDashboard() {
                                 async consumeDamage(
                                     valor: number,
                                 ): Promise<void> {
-                                    setEstado(
-                                        produce((draft) => {
-                                            draft.jogador =
-                                                partida.personagem.recebeDano(
-                                                    draft.jogador,
-                                                    valor,
-                                                )
-                                        }),
+                                    setJogador((jogador) =>
+                                        partida.personagem.recebeDano(
+                                            jogador,
+                                            valor,
+                                        ),
                                     )
                                     await delay(1000)
                                 },
@@ -210,34 +206,29 @@ export default function GameDashboard() {
                                 async onBattleFinished(
                                     result: FinalBatalha,
                                 ): Promise<void> {
-                                    setInimigo(null)
-                                    setEstado(
-                                        produce((draft) => {
-                                            let jogador = draft.jogador
-                                            jogador =
-                                                partida.personagem.classe.evoluiBatalha(
-                                                    jogador,
+                                    switch (result.type) {
+                                        case "vitoria":
+                                            if (result.espolio != null) {
+                                                addEspolio(
+                                                    result.espolio.id,
+                                                    result.espolio,
                                                 )
-                                            const nivelAtual = jogador.nivel
-                                            jogador =
-                                                partida.personagem.aumentaXp(
-                                                    jogador,
-                                                    nivelAtual * 10,
-                                                )
-                                            draft.jogador = jogador
-                                            switch (result.type) {
-                                                case "vitoria":
-                                                    if (
-                                                        result.espolio != null
-                                                    ) {
-                                                        addEspolio(
-                                                            result.espolio.id,
-                                                            result.espolio,
-                                                        )
-                                                    }
                                             }
-                                        }),
-                                    )
+                                    }
+                                    setInimigo(null)
+                                    setJogador((jogador_) => {
+                                        let jogador = jogador_
+                                        jogador =
+                                            partida.personagem.classe.evoluiBatalha(
+                                                jogador,
+                                            )
+                                        const nivelAtual = jogador.nivel
+                                        jogador = partida.personagem.aumentaXp(
+                                            jogador,
+                                            nivelAtual * 10,
+                                        )
+                                        return jogador
+                                    })
                                     await delay(2000)
                                 },
                             }}
@@ -282,14 +273,11 @@ export default function GameDashboard() {
                                     )
                                     break
                             }
-                            setEstado(
-                                produce((draft) => {
-                                    draft.jogador =
-                                        partida.personagem.diminuiFome(
-                                            jogador,
-                                            comida.calculaFomeRestaurada(),
-                                        )
-                                }),
+                            setJogador((jogador) =>
+                                partida.personagem.diminuiFome(
+                                    jogador,
+                                    comida.calculaFomeRestaurada(),
+                                ),
                             )
                         }}
                         onDrink={(tipoPocao) => {
@@ -301,14 +289,11 @@ export default function GameDashboard() {
                                 )
                             }
                             const atributos = bebida.calculaAtributos()
-                            setEstado(
-                                produce((draft) => {
-                                    draft.jogador =
-                                        partida.personagem.aumentaHp(
-                                            draft.jogador,
-                                            atributos.hp,
-                                        )
-                                }),
+                            setJogador((jogador) =>
+                                partida.personagem.aumentaHp(
+                                    jogador,
+                                    atributos.hp,
+                                ),
                             )
                             switch (tipoPocao) {
                                 case "forca":
