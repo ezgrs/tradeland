@@ -59,10 +59,7 @@ export default function GameDashboard() {
             }
         },
     })
-    if (!hook) return null
-
     const probabilidadeRef = useRef<Probabilidade>(new ProbabilidadeAleatoria())
-    const [partida, jogador, setJogador, efeitos, addEfeito] = hook
     const [moedas, depositCoins] = useCarteira()
     const [logs, addLog, clearLogs] = useLogs()
     const [espolios, addEspolio, _] = useSacola<Espolio["id"], Espolio>()
@@ -71,12 +68,16 @@ export default function GameDashboard() {
     const [golpe, setGolpe] = useState<Golpe | null>(null)
     const [inimigo, setInimigo] = useState<Inimigo | null>(null)
 
-    const tier = Math.min(31 - Math.clz32(jogador.nivel), 6)
+    const nivel = hook?.[1].nivel
+    const tier = nivel == null ? null : Math.min(31 - Math.clz32(nivel), 6)
     useEffect(() => {
         if (tier == null) return
         if (tier < 2) return
         addLog("inesperado", "Você desbloqueou um novo ataque!")
     }, [tier])
+
+    if (hook == null) return
+    const [partida, jogador, setJogador, efeitos, addEfeito] = hook
 
     function onEncontraMoedas(valor: number) {
         addLog("positivo", `Você encontrou ${valor} moedas!`)
