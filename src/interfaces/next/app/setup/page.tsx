@@ -1,6 +1,5 @@
 "use client"
 
-import { TipoPersonagem } from "@/src/domain/entities/Personagem"
 import { Button } from "../../components/ui/button"
 import {
     Card,
@@ -23,6 +22,9 @@ import {
 import { Dificuldade } from "@/src/domain/entities/Dificuldade"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+
+const tiposPersonagens = ["curandeiro", "gladiador", "mago"] as const
+type TipoPersonagem = (typeof tiposPersonagens)[number]
 
 type Estado = {
     nome: string | undefined
