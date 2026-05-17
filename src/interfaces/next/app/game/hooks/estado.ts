@@ -57,7 +57,6 @@ export function useEstado():
         setState({
             partida: partida,
             jogador: classe.criaJogador(),
-            golpe: null,
             inimigo: null,
         })
     }, [router])

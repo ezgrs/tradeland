@@ -19,7 +19,7 @@ import { Comida } from "@/src/domain/entities/Comida"
 import { FinalBatalha } from "./models/FinalBatalha"
 import { Golpe } from "@/src/domain/entities/Golpe"
 import { useEstado } from "./hooks/estado"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useLogs } from "./hooks/logs"
 import { useCarteira } from "./hooks/carteira"
 import { useSacola } from "./hooks/sacola"
@@ -36,6 +36,7 @@ export default function GameDashboard() {
     const [espolios, addEspolio, _] = useSacola<Espolio["id"], Espolio>()
     const [comidas, addComida, popComida] = useSacola<TipoAlimento, Comida>()
     const [bebidas, addBebida, popBebida] = useSacola<TipoPocao, Bebida>()
+    const [golpe, setGolpe] = useState<Golpe | null>(null)
 
     const tier = Math.min(31 - Math.clz32(jogador.nivel), 6)
     useEffect(() => {
@@ -149,9 +150,9 @@ export default function GameDashboard() {
                                         lvl6: 6,
                                     }
                                     const danoGolpe =
-                                        estado.golpe == null
+                                        golpe == null
                                             ? 10
-                                            : (tiers[estado.golpe] + 1) * 10
+                                            : (tiers[golpe] + 1) * 10
                                     const dano =
                                         partida.personagem.classe.calculaDano(
                                             jogador,
@@ -332,19 +333,13 @@ export default function GameDashboard() {
                         title="Batalha"
                         jogador={jogador}
                         partida={partida}
-                        golpe={estado.golpe}
+                        golpe={golpe}
                         inimigo={estado.inimigo}
                         potions={{
                             forca: efeitos.get("forca")?.tempo,
                             sagacidade: efeitos.get("sagacidade")?.tempo,
                         }}
-                        onUpdateGolpe={(golpe) => {
-                            setEstado(
-                                produce((draft) => {
-                                    draft.golpe = golpe
-                                }),
-                            )
-                        }}
+                        onUpdateGolpe={setGolpe}
                     />
                 </div>
             </div>

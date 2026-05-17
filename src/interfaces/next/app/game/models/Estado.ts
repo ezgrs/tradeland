@@ -6,6 +6,5 @@ import { Inimigo } from "@/src/domain/entities/Inimigo"
 export type Estado = {
     partida: Partida
     jogador: Jogador
-    golpe: Golpe | null
     inimigo: Inimigo | null
 }
