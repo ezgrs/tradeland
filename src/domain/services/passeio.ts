@@ -18,8 +18,8 @@ import { TipoInimigo } from "../entities/Inimigo"
 import { TipoPocao } from "../entities/Pocao"
 import { Classe } from "../entities/Classe"
 
-type AchadoBau = { tipo: "bau"; item: ItemBau }
-type AchadoInimigo = {
+export type AchadoBau = { tipo: "bau"; item: ItemBau }
+export type AchadoInimigo = {
     tipo: "inimigo"
     tipoInimigo: TipoInimigo
     recompensa: Espolio | null
