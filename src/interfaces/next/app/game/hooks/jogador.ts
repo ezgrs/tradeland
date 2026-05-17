@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Partida } from "../models/Partida"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import { produce } from "immer"
 import { Efeito, useEfeitos } from "./efeitos"
 import { Jogador } from "@/src/domain/entities/Jogador"
