@@ -3,13 +3,6 @@ import { Partida } from "../models/Partida"
 import { useRouter } from "next/router"
 import { produce } from "immer"
 import { Efeito, useEfeitos } from "./efeitos"
-import {
-    ClasseCurandeiro,
-    ClasseGladiador,
-    ClasseMago,
-    ClassePadrao,
-} from "@/src/domain/entities/Classe"
-import { Personagem } from "@/src/domain/services/Personagem"
 import { Jogador } from "@/src/domain/entities/Jogador"
 
 type State = {
@@ -18,7 +11,13 @@ type State = {
 }
 type TipoEfeito = "forca" | "sagacidade"
 
-export function useJogador():
+type Props = {
+    createPartida: () => Partida | null
+}
+
+export function useJogador(
+    props: Props,
+):
     | [
           Partida,
           Jogador,
@@ -37,31 +36,14 @@ export function useJogador():
 
     const router = useRouter()
     useEffect(() => {
-        const stored = sessionStorage.getItem("userData")
-        if (!stored) {
+        const partida = props.createPartida()
+        if (partida == null) {
             router.replace("/")
             return
         }
-        const userData = JSON.parse(stored)
-        let classe = new ClassePadrao()
-        switch (userData["classe"]) {
-            case "curandeiro":
-                classe = new ClasseCurandeiro(classe)
-                break
-            case "gladiador":
-                classe = new ClasseGladiador(classe)
-                break
-            case "mago":
-                classe = new ClasseMago(classe)
-                break
-        }
-        const partida: Partida = {
-            personagem: new Personagem({ nome: userData["nome"], classe }),
-            dificuldade: userData["dificuldade"],
-        }
         setState({
             partida: partida,
-            jogador: classe.criaJogador(),
+            jogador: partida.personagem.classe.criaJogador(),
         })
     }, [router])
 

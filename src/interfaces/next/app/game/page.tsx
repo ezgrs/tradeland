@@ -24,9 +24,40 @@ import { useLogs } from "./hooks/logs"
 import { useCarteira } from "./hooks/carteira"
 import { useSacola } from "./hooks/sacola"
 import { Espolio } from "@/src/domain/entities/Espolio"
+import { Personagem } from "@/src/domain/services/Personagem"
+import {
+    ClasseCurandeiro,
+    ClasseGladiador,
+    ClasseMago,
+    ClassePadrao,
+} from "@/src/domain/entities/Classe"
 
 export default function GameDashboard() {
-    const hook = useJogador()
+    const hook = useJogador({
+        createPartida: () => {
+            const stored = sessionStorage.getItem("userData")
+            if (stored == null) {
+                return null
+            }
+            const userData = JSON.parse(stored)
+            let classe = new ClassePadrao()
+            switch (userData["classe"]) {
+                case "curandeiro":
+                    classe = new ClasseCurandeiro(classe)
+                    break
+                case "gladiador":
+                    classe = new ClasseGladiador(classe)
+                    break
+                case "mago":
+                    classe = new ClasseMago(classe)
+                    break
+            }
+            return {
+                personagem: new Personagem({ nome: userData["nome"], classe }),
+                dificuldade: userData["dificuldade"],
+            }
+        },
+    })
     if (!hook) return null
 
     const [partida, jogador, setJogador, efeitos, addEfeito] = hook
