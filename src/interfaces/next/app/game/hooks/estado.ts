@@ -7,30 +7,19 @@ import { produce } from "immer"
 import { Efeito, useEfeitos } from "./efeitos"
 import { createLog } from "../models/Log"
 import {
-    DefaultJogadorController,
-    DefaultJogadorListener,
-    JogadorController,
-    JogadorListener,
-} from "@/src/domain/services/jogador"
-import {
     ClasseCurandeiro,
     ClasseGladiador,
     ClasseMago,
     ClassePadrao,
 } from "@/src/domain/entities/Classe"
+import { Personagem } from "@/src/domain/services/Personagem"
 
 type TipoEfeito = "forca" | "sagacidade"
-
-type JogadorRef = {
-    controller: JogadorController<Jogador>
-    listener: JogadorListener<Jogador>
-}
 
 export function useEstado():
     | [
           Estado,
           (action: (state: Estado) => Estado) => void,
-          RefObject<JogadorRef>,
           Map<TipoEfeito, Efeito>,
           (value: TipoEfeito, efeito: Efeito) => void,
       ]
@@ -64,8 +53,7 @@ export function useEstado():
                 break
         }
         const partida: Partida = {
-            nomePersonagem: userData["nome"],
-            classePersonagem: classe,
+            personagem: new Personagem({ nome: userData["nome"], classe }),
             dificuldade: userData["dificuldade"],
         }
         setState({
@@ -85,22 +73,13 @@ export function useEstado():
         })
     }, [router])
 
-    const jogadorRef = useRef<JogadorRef>(
-        (() => {
-            const controller = new DefaultJogadorController()
-            return {
-                controller,
-                listener: new DefaultJogadorListener(controller),
-            }
-        })(),
-    )
     useEffect(() => {
         const id = setInterval(() => {
             setEstado(
                 produce((draft) => {
-                    draft.jogador = jogadorRef.current.controller.alteraFome(
+                    draft.jogador = draft.partida.personagem.diminuiFome(
                         draft.jogador,
-                        5,
+                        -5,
                     )
                 }),
             )
@@ -135,5 +114,5 @@ export function useEstado():
     }, [tier])
 
     if (estado == null) return null
-    return [estado, setEstado, jogadorRef, efeitos, addEfeito]
+    return [estado, setEstado, efeitos, addEfeito]
 }

@@ -1,8 +1,7 @@
 import { Dificuldade } from "@/src/domain/entities/Dificuldade"
-import { Classe } from "@/src/domain/entities/Classe"
+import { Personagem } from "@/src/domain/services/Personagem"
 
 export type Partida = {
-    nomePersonagem: string
-    classePersonagem: Classe
+    personagem: Personagem
     dificuldade: Dificuldade
 }

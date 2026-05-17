@@ -25,7 +25,7 @@ export default function GameDashboard() {
     const hook = useEstado()
     if (!hook) return null
 
-    const [estado, setEstado, jogadorRef, efeitos, addEfeito] = hook
+    const [estado, setEstado, efeitos, addEfeito] = hook
     const { jogador, partida, carteira, mochila } = estado
 
     function onEncontraMoedas(valor: number) {
@@ -163,7 +163,7 @@ export default function GameDashboard() {
                                             ? 10
                                             : (tiers[estado.golpe] + 1) * 10
                                     const dano =
-                                        partida.classePersonagem.calculaDano(
+                                        partida.personagem.classe.calculaDano(
                                             jogador,
                                             danoGolpe,
                                         )
@@ -176,7 +176,7 @@ export default function GameDashboard() {
                                     setEstado(
                                         produce((draft) => {
                                             draft.jogador =
-                                                jogadorRef.current.listener.recebeDano(
+                                                partida.personagem.recebeDano(
                                                     draft.jogador,
                                                     valor,
                                                 )
@@ -189,7 +189,7 @@ export default function GameDashboard() {
                                 async onSomethingFound(): Promise<AchadoPasseio> {
                                     const achado = executaPasseio(
                                         new ProbabilidadeAleatoria(),
-                                        partida.classePersonagem,
+                                        partida.personagem.classe,
                                     )
                                     switch (achado.tipo) {
                                         case "bau":
@@ -232,21 +232,15 @@ export default function GameDashboard() {
 
                                             let jogador = draft.jogador
                                             jogador =
-                                                partida.classePersonagem.evoluiBatalha(
+                                                partida.personagem.classe.evoluiBatalha(
                                                     jogador,
                                                 )
                                             const nivelAtual = jogador.nivel
                                             jogador =
-                                                jogadorRef.current.listener.aumentaXp(
+                                                partida.personagem.aumentaXp(
                                                     jogador,
                                                     nivelAtual * 10,
                                                 )
-                                            if (jogador.nivel > nivelAtual) {
-                                                jogador =
-                                                    partida.classePersonagem.evoluiNivel(
-                                                        jogador,
-                                                    )
-                                            }
                                             draft.jogador = jogador
                                             switch (result.type) {
                                                 case "vitoria":
@@ -324,9 +318,9 @@ export default function GameDashboard() {
                                             break
                                     }
                                     draft.jogador =
-                                        jogadorRef.current.listener.come(
+                                        partida.personagem.diminuiFome(
                                             jogador,
-                                            comida,
+                                            comida.calculaFomeRestaurada(),
                                         )
                                     if (comidas.length === 0) {
                                         delete draft.mochila.comidas[
@@ -358,7 +352,7 @@ export default function GameDashboard() {
 
                                     const atributos = bebida.calculaAtributos()
                                     draft.jogador =
-                                        jogadorRef.current.controller.alteraHp(
+                                        partida.personagem.aumentaHp(
                                             draft.jogador,
                                             atributos.hp,
                                         )

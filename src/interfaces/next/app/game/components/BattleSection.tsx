@@ -127,7 +127,7 @@ export function BattleSection(props: Props) {
                 )}
                 <AtaquesSelect
                     nivel={jogador.nivel}
-                    classe={partida.classePersonagem}
+                    classe={partida.personagem.classe}
                     golpe={props.golpe}
                     onSelected={inimigo == null ? null : props.onUpdateGolpe}
                 />
