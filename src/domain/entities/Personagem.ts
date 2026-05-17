@@ -2,7 +2,7 @@ import { Jogador } from "./Jogador"
 
 export interface ComportamentoPersonagem {
     quandoEhCriado(jogador: Jogador): Jogador
-    quandoSobeNivel(jogador: Jogador, nivel: number): Jogador
+    quandoSobeNivel(jogador: Jogador): Jogador
     quandoVenceBatalha(jogador: Jogador): Jogador
     calculaDano(jogador: Jogador, dano: number): number
 }
@@ -16,7 +16,8 @@ export const comportamentosPersonagens = {
                 hp: jogador.maxHp + 20,
             }
         },
-        quandoSobeNivel(jogador: Jogador, nivel: number): Jogador {
+        quandoSobeNivel(jogador: Jogador): Jogador {
+            const nivel = jogador.nivel
             const maxHp = Math.min(jogador.maxHp + nivel * 19, nivel * 100)
             return {
                 ...jogador,
@@ -44,7 +45,8 @@ export const comportamentosPersonagens = {
                 forca: jogador.forca + 20,
             }
         },
-        quandoSobeNivel(jogador: Jogador, nivel: number): Jogador {
+        quandoSobeNivel(jogador: Jogador): Jogador {
+            const nivel = jogador.nivel
             return {
                 ...jogador,
                 maxHp: Math.min(jogador.maxHp + nivel * 19, nivel * 100),
@@ -69,7 +71,8 @@ export const comportamentosPersonagens = {
                 sagacidade: jogador.sagacidade + 20,
             }
         },
-        quandoSobeNivel(jogador: Jogador, nivel: number): Jogador {
+        quandoSobeNivel(jogador: Jogador): Jogador {
+            const nivel = jogador.nivel
             return {
                 ...jogador,
                 maxHp: Math.min(jogador.maxHp + nivel * 19, nivel * 100),

@@ -370,6 +370,25 @@ export default function GameDashboard() {
                                     setState(
                                         produce((draft) => {
                                             draft.inimigo = null
+
+                                            let jogador = draft.jogador
+                                            jogador =
+                                                comportamentosPersonagens[
+                                                    partida.tipoPersonagem
+                                                ].quandoVenceBatalha(jogador)
+                                            const nivelAtual = jogador.nivel
+                                            jogador =
+                                                jogadorRef.current.listener.aumentaXp(
+                                                    jogador,
+                                                    nivelAtual * 10,
+                                                )
+                                            if (jogador.nivel > nivelAtual) {
+                                                jogador =
+                                                    comportamentosPersonagens[
+                                                        partida.tipoPersonagem
+                                                    ].quandoSobeNivel(jogador)
+                                            }
+                                            draft.jogador = jogador
                                             switch (result.type) {
                                                 case "vitoria":
                                                     if (result.espolio != null) {
